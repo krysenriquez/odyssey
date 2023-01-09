@@ -1,0 +1,254 @@
+[
+{
+    "model": "users.rolepermissions",
+    "pk": 1,
+    "fields": {
+        "user_type": "Developer",
+        "permission": 2,
+        "can_create": true,
+        "can_retrieve": true,
+        "can_delete": true,
+        "can_update": true
+    }
+},
+{
+    "model": "users.rolepermissions",
+    "pk": 2,
+    "fields": {
+        "user_type": "Developer",
+        "permission": 4,
+        "can_create": true,
+        "can_retrieve": true,
+        "can_delete": true,
+        "can_update": true
+    }
+},
+{
+    "model": "users.rolepermissions",
+    "pk": 3,
+    "fields": {
+        "user_type": "Developer",
+        "permission": 5,
+        "can_create": true,
+        "can_retrieve": true,
+        "can_delete": true,
+        "can_update": true
+    }
+},
+{
+    "model": "users.rolepermissions",
+    "pk": 4,
+    "fields": {
+        "user_type": "Developer",
+        "permission": 6,
+        "can_create": true,
+        "can_retrieve": true,
+        "can_delete": true,
+        "can_update": true
+    }
+},
+{
+    "model": "users.rolepermissions",
+    "pk": 5,
+    "fields": {
+        "user_type": "Developer",
+        "permission": 3,
+        "can_create": true,
+        "can_retrieve": true,
+        "can_delete": true,
+        "can_update": true
+    }
+},
+{
+    "model": "users.rolepermissions",
+    "pk": 6,
+    "fields": {
+        "user_type": "Developer",
+        "permission": 7,
+        "can_create": true,
+        "can_retrieve": true,
+        "can_delete": true,
+        "can_update": true
+    }
+},
+{
+    "model": "users.rolepermissions",
+    "pk": 7,
+    "fields": {
+        "user_type": "Developer",
+        "permission": 8,
+        "can_create": true,
+        "can_retrieve": true,
+        "can_delete": true,
+        "can_update": true
+    }
+},
+{
+    "model": "users.rolepermissions",
+    "pk": 8,
+    "fields": {
+        "user_type": "Admin",
+        "permission": 2,
+        "can_create": true,
+        "can_retrieve": true,
+        "can_delete": true,
+        "can_update": true
+    }
+},
+{
+    "model": "users.rolepermissions",
+    "pk": 9,
+    "fields": {
+        "user_type": "Admin",
+        "permission": 4,
+        "can_create": true,
+        "can_retrieve": true,
+        "can_delete": true,
+        "can_update": true
+    }
+},
+{
+    "model": "users.rolepermissions",
+    "pk": 10,
+    "fields": {
+        "user_type": "Admin",
+        "permission": 5,
+        "can_create": true,
+        "can_retrieve": true,
+        "can_delete": true,
+        "can_update": true
+    }
+},
+{
+    "model": "users.rolepermissions",
+    "pk": 11,
+    "fields": {
+        "user_type": "Admin",
+        "permission": 6,
+        "can_create": true,
+        "can_retrieve": true,
+        "can_delete": true,
+        "can_update": true
+    }
+},
+{
+    "model": "users.rolepermissions",
+    "pk": 12,
+    "fields": {
+        "user_type": "Admin",
+        "permission": 3,
+        "can_create": true,
+        "can_retrieve": true,
+        "can_delete": true,
+        "can_update": true
+    }
+},
+{
+    "model": "users.rolepermissions",
+    "pk": 13,
+    "fields": {
+        "user_type": "Admin",
+        "permission": 7,
+        "can_create": true,
+        "can_retrieve": true,
+        "can_delete": true,
+        "can_update": true
+    }
+},
+{
+    "model": "users.rolepermissions",
+    "pk": 14,
+    "fields": {
+        "user_type": "Admin",
+        "permission": 8,
+        "can_create": true,
+        "can_retrieve": true,
+        "can_delete": true,
+        "can_update": true
+    }
+},
+{
+    "model": "users.rolepermissions",
+    "pk": 15,
+    "fields": {
+        "user_type": "Staff",
+        "permission": 2,
+        "can_create": false,
+        "can_retrieve": false,
+        "can_delete": false,
+        "can_update": false
+    }
+},
+{
+    "model": "users.rolepermissions",
+    "pk": 16,
+    "fields": {
+        "user_type": "Staff",
+        "permission": 4,
+        "can_create": false,
+        "can_retrieve": false,
+        "can_delete": false,
+        "can_update": false
+    }
+},
+{
+    "model": "users.rolepermissions",
+    "pk": 17,
+    "fields": {
+        "user_type": "Staff",
+        "permission": 5,
+        "can_create": false,
+        "can_retrieve": false,
+        "can_delete": false,
+        "can_update": false
+    }
+},
+{
+    "model": "users.rolepermissions",
+    "pk": 18,
+    "fields": {
+        "user_type": "Staff",
+        "permission": 6,
+        "can_create": false,
+        "can_retrieve": false,
+        "can_delete": false,
+        "can_update": false
+    }
+},
+{
+    "model": "users.rolepermissions",
+    "pk": 19,
+    "fields": {
+        "user_type": "Staff",
+        "permission": 3,
+        "can_create": false,
+        "can_retrieve": false,
+        "can_delete": false,
+        "can_update": false
+    }
+},
+{
+    "model": "users.rolepermissions",
+    "pk": 20,
+    "fields": {
+        "user_type": "Staff",
+        "permission": 7,
+        "can_create": true,
+        "can_retrieve": true,
+        "can_delete": false,
+        "can_update": false
+    }
+},
+{
+    "model": "users.rolepermissions",
+    "pk": 21,
+    "fields": {
+        "user_type": "Staff",
+        "permission": 8,
+        "can_create": false,
+        "can_retrieve": false,
+        "can_delete": false,
+        "can_update": false
+    }
+}
+]

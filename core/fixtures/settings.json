@@ -1,0 +1,130 @@
+[
+{
+    "model": "core.setting",
+    "pk": 1,
+    "fields": {
+        "property": "CODE_EXPIRATION",
+        "value": "350.00"
+    }
+},
+{
+    "model": "core.setting",
+    "pk": 2,
+    "fields": {
+        "property": "POINT_VALUE_CONVERSION",
+        "value": "10.00"
+    }
+},
+{
+    "model": "core.setting",
+    "pk": 3,
+    "fields": {
+        "property": "FLUSH_OUT_PENALTY_PERCENTAGE_WEAK",
+        "value": "100.00"
+    }
+},
+{
+    "model": "core.setting",
+    "pk": 4,
+    "fields": {
+        "property": "FLUSH_OUT_PENALTY_PERCENTAGE_STRONG",
+        "value": "50.00"
+    }
+},
+{
+    "model": "core.setting",
+    "pk": 5,
+    "fields": {
+        "property": "DIRECT_REFERRAL_PERCENTAGE",
+        "value": "10.00"
+    }
+},
+{
+    "model": "core.setting",
+    "pk": 6,
+    "fields": {
+        "property": "REFERRAL_BONUS_COUNT",
+        "value": "2.00"
+    }
+},
+{
+    "model": "core.setting",
+    "pk": 7,
+    "fields": {
+        "property": "FRANCHISE_COMMISSION_PERCENTAGE",
+        "value": "10.00"
+    }
+},
+{
+    "model": "core.setting",
+    "pk": 8,
+    "fields": {
+        "property": "GLOBAL_POOL_BONUS_PERCENTAGE",
+        "value": "5.00"
+    }
+},
+{
+    "model": "core.setting",
+    "pk": 9,
+    "fields": {
+        "property": "GLOBAL_POOL_BONUS_REQUIREMENT",
+        "value": "1500.00"
+    }
+},
+{
+    "model": "core.setting",
+    "pk": 10,
+    "fields": {
+        "property": "COMPANY_CASHOUT_FEE_PERCENTAGE",
+        "value": "10.00"
+    }
+},
+{
+    "model": "core.setting",
+    "pk": 11,
+    "fields": {
+        "property": "B_WALLET_CASHOUT_DAY",
+        "value": "2.00"
+    }
+},
+{
+    "model": "core.setting",
+    "pk": 12,
+    "fields": {
+        "property": "B_WALLET_CASHOUT_OVERRIDE",
+        "value": "1.00"
+    }
+},
+{
+    "model": "core.setting",
+    "pk": 13,
+    "fields": {
+        "property": "F_WALLET_CASHOUT_DAY",
+        "value": "1.00"
+    }
+},
+{
+    "model": "core.setting",
+    "pk": 14,
+    "fields": {
+        "property": "F_WALLET_CASHOUT_OVERRIDE",
+        "value": "0.00"
+    }
+},
+{
+    "model": "core.setting",
+    "pk": 15,
+    "fields": {
+        "property": "MAX_USER_ACCOUNT_LIMIT",
+        "value": "1.00"
+    }
+},
+{
+    "model": "core.setting",
+    "pk": 16,
+    "fields": {
+        "property": "CODE_LENGTH",
+        "value": "15.00"
+    }
+}
+]

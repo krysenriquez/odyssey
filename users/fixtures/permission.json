@@ -1,0 +1,51 @@
+[
+{
+    "model": "users.permission",
+    "pk": 2,
+    "fields": {
+        "permission_name": "Member Management"
+    }
+},
+{
+    "model": "users.permission",
+    "pk": 3,
+    "fields": {
+        "permission_name": "Franchisee Management"
+    }
+},
+{
+    "model": "users.permission",
+    "pk": 4,
+    "fields": {
+        "permission_name": "Cashout Management"
+    }
+},
+{
+    "model": "users.permission",
+    "pk": 5,
+    "fields": {
+        "permission_name": "Activity Management"
+    }
+},
+{
+    "model": "users.permission",
+    "pk": 6,
+    "fields": {
+        "permission_name": "Package Management"
+    }
+},
+{
+    "model": "users.permission",
+    "pk": 7,
+    "fields": {
+        "permission_name": "Code Management"
+    }
+},
+{
+    "model": "users.permission",
+    "pk": 8,
+    "fields": {
+        "permission_name": "Settings Management"
+    }
+}
+]
