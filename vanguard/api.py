@@ -1,16 +1,27 @@
 from rest_framework import status, views
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from users.enums import *
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenObtainSlidingView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
-from vanguard.serializers import AuthLoginSerializer
+from vanguard.serializers import (
+    AuthAdminLoginSerializer,
+    AuthLoginSerializer,
+    AuthRefreshSerializer,
+)
 from vanguard.permissions import *
+
+
+class AuthAdminLoginView(TokenObtainPairView):
+    serializer_class = AuthAdminLoginSerializer
 
 
 class AuthLoginView(TokenObtainPairView):
     serializer_class = AuthLoginSerializer
+
+
+class AuthRefreshView(TokenRefreshView):
+    serializer_class = AuthRefreshSerializer
 
 
 class WhoAmIView(views.APIView):

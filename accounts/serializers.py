@@ -79,14 +79,23 @@ class AvatarInfoSerializer(ModelSerializer):
         read_only_fields = ("account",)
 
 
+class CashoutMethodSerializer(ModelSerializer):
+    cashout_method_name = serializers.CharField(source="get_method_name", required=False)
+
+    class Meta:
+        model = CashoutMethod
+        fields = ["id", "account_name", "account_number", "method", "cashout_method_name"]
+        read_only_fields = ("account",)
+
+
 class AccountSerializer(ModelSerializer):
     id = serializers.IntegerField(required=False)
-    personal_info = PersonalInfoSerializer(many=True, required=False)
-    contact_info = ContactInfoSerializer(many=True, required=False)
-    address_info = AddressInfoSerializer(many=True, required=False)
-    avatar_info = AvatarInfoSerializer(many=True, required=False)
-    parent_name = serializers.CharField(source="self.parent.get_fullname", required=False)
-    referrer_name = serializers.CharField(source="self.referrer.get_fullname", required=False)
+    personal_info = PersonalInfoSerializer(required=False)
+    contact_info = ContactInfoSerializer(required=False)
+    address_info = AddressInfoSerializer(required=False)
+    avatar_info = AvatarInfoSerializer(required=False)
+    parent_name = serializers.CharField(source="self.parent.get_full_name", required=False)
+    referrer_name = serializers.CharField(source="self.referrer.get_full_name", required=False)
 
     def create(self, validated_data):
         personal_info = validated_data.pop("personal_info")
@@ -95,17 +104,10 @@ class AccountSerializer(ModelSerializer):
         avatar_info = validated_data.pop("avatar_info")
         account = Account.objects.create(**validated_data)
 
-        for personal in personal_info:
-            PersonalInfo.objects.create(**personal, account=account)
-
-        for contact in contact_info:
-            ContactInfo.objects.create(**contact, account=account)
-
-        for address in address_info:
-            AddressInfo.objects.create(**address, account=account)
-
-        for avatar in avatar_info:
-            AvatarInfo.objects.create(**avatar, account=account)
+        PersonalInfo.objects.create(**personal_info, account=account)
+        ContactInfo.objects.create(**contact_info, account=account)
+        AddressInfo.objects.create(**address_info, account=account)
+        AvatarInfo.objects.create(**avatar_info, account=account)
 
         return account
 
@@ -115,6 +117,8 @@ class AccountSerializer(ModelSerializer):
         address_info = validated_data.get("address_info")
         avatar_info = validated_data.get("avatar_info")
 
+        instance.activation_code = validated_data.get("activation_code", instance.activation_code)
+        instance.package = validated_data.get("package", instance.package)
         instance.first_name = validated_data.get("first_name", instance.first_name)
         instance.middle_name = validated_data.get("middle_name", instance.middle_name)
         instance.last_name = validated_data.get("last_name", instance.last_name)
@@ -122,84 +126,47 @@ class AccountSerializer(ModelSerializer):
         instance.is_deleted = validated_data.get("is_deleted", instance.is_deleted)
         instance.save()
 
-        keep_personal_info = []
         if personal_info:
-            for personal in personal_info:
-                if "id" in personal.keys():
-                    if PersonalInfo.objects.filter(id=personal_info["id"]).exists():
-                        e = PersonalInfo.objects.get(id=personal_info["id"])
+            if "id" in personal_info.keys():
+                if PersonalInfo.objects.filter(id=personal_info["id"]).exists():
+                    e = PersonalInfo.objects.get(id=personal_info["id"])
+                    e.birthdate = validated_data.get("birthdate", e.birthdate)
+                    e.gender = validated_data.get("gender", e.gender)
+                    e.save()
+            else:
+                e = PersonalInfo.objects.create(**personal_info, account=instance)
 
-                        e.save()
-                        keep_personal_info.append(e.id)
-                    else:
-                        continue
-                else:
-                    e = PersonalInfo.objects.create(**personal, account=instance)
-                    keep_personal_info.append(e.id)
-
-            for personal in instance.personal_info.all():
-                if personal.id not in keep_personal_info:
-                    personal.delete()
-
-        keep_contact_info = []
         if contact_info:
-            for contact in contact_info:
-                if "id" in contact.keys():
-                    if ContactInfo.objects.filter(id=contact_info["id"]).exists():
-                        e = ContactInfo.objects.get(id=contact_info["id"])
-                        e.contact_number = validated_data.get("contact_number", e.contact_number)
-                        e.save()
-                        keep_contact_info.append(e.id)
-                    else:
-                        continue
-                else:
-                    e = ContactInfo.objects.create(**contact, account=instance)
-                    keep_contact_info.append(e.id)
+            if "id" in contact_info.keys():
+                if ContactInfo.objects.filter(id=contact_info["id"]).exists():
+                    e = ContactInfo.objects.get(id=contact_info["id"])
+                    e.contact_number = validated_data.get("contact_number", e.contact_number)
+                    e.save()
+            else:
+                e = ContactInfo.objects.create(**contact_info, account=instance)
 
-            for contact in instance.contact_info.all():
-                if contact.id not in keep_contact_info:
-                    contact.delete()
-
-        keep_address_info = []
         if address_info:
-            for address in address_info:
-                if "id" in address.keys():
-                    if AddressInfo.objects.filter(id=address_info["id"]).exists():
-                        e = AddressInfo.objects.get(id=address_info["id"])
-                        e.street = validated_data.get("street", e.street)
-                        e.city = validated_data.get("city", e.city)
-                        e.state = validated_data.get("state", e.state)
-                        e.save()
-                        keep_address_info.append(e.id)
-                    else:
-                        continue
-                else:
-                    e = AddressInfo.objects.create(**address, account=instance)
-                    keep_address_info.append(e.id)
+            if "id" in address_info.keys():
+                if AddressInfo.objects.filter(id=address_info["id"]).exists():
+                    e = AddressInfo.objects.get(id=address_info["id"])
+                    e.street = validated_data.get("street", e.street)
+                    e.city = validated_data.get("city", e.city)
+                    e.state = validated_data.get("state", e.state)
+                    e.save()
+            else:
+                e = AddressInfo.objects.create(**address_info, account=instance)
 
-            for address in instance.address_info.all():
-                if address.id not in keep_address_info:
-                    address.delete()
-
-        keep_avatar_info = []
         if avatar_info:
-            for avatar in avatar_info:
-                if "id" in avatar.keys():
-                    if AvatarInfo.objects.filter(id=avatar_info["id"]).exists():
-                        e = AvatarInfo.objects.get(id=avatar_info["id"])
-                        e.file_name = validated_data.get("file_name", e.file_name)
-                        e.file_attachment = validated_data.get("file_attachment", e.file_attachment)
-                        e.save()
-                        keep_avatar_info.append(e.id)
-                    else:
-                        continue
-                else:
-                    e = AvatarInfo.objects.create(**avatar, account=instance)
-                    keep_avatar_info.append(e.id)
+            if "id" in avatar_info.keys():
+                if AvatarInfo.objects.filter(id=avatar_info["id"]).exists():
+                    e = AvatarInfo.objects.get(id=avatar_info["id"])
+                    e.file_name = validated_data.get("file_name", e.file_name)
+                    e.file_attachment = validated_data.get("file_attachment", e.file_attachment)
+                    e.save()
+            else:
+                e = AvatarInfo.objects.create(**avatar_info, account=instance)
 
-            for avatar in instance.avatar_info.all():
-                if avatar.id not in keep_avatar_info:
-                    avatar.delete()
+        return instance
 
     class Meta:
         model = Account
@@ -207,17 +174,18 @@ class AccountSerializer(ModelSerializer):
 
 
 class AccountProfileSerializer(ModelSerializer):
-    personal_info = PersonalInfoSerializer(many=True, required=False)
-    contact_info = ContactInfoSerializer(many=True, required=False)
-    address_info = AddressInfoSerializer(many=True, required=False)
-    avatar_info = AvatarInfoSerializer(many=True, required=False)
-    parent_name = serializers.CharField(source="self.parent.get_fullname", required=False)
-    referrer_name = serializers.CharField(source="self.referrer.get_fullname", required=False)
+    personal_info = PersonalInfoSerializer(required=False)
+    contact_info = ContactInfoSerializer(required=False)
+    address_info = AddressInfoSerializer(required=False)
+    avatar_info = AvatarInfoSerializer(required=False)
+    parent_name = serializers.CharField(source="parent.get_full_name", required=False)
+    parent_account_number = serializers.CharField(source="parent.get_account_number", required=False)
+    referrer_name = serializers.CharField(source="referrer.get_full_name", required=False)
+    referrer_account_number = serializers.CharField(source="referrer.get_account_number", required=False)
     full_name = serializers.CharField(source="get_full_name", required=False)
     account_number = serializers.CharField(source="get_account_number", required=False)
-
-    def get_avatar_info(self, obj):
-        return obj.avatar_info[0]["file_attachment"]
+    account_package = serializers.CharField(source="get_account_package", required=False)
+    account_package_amount = serializers.CharField(source="get_account_package_amount", required=False)
 
     class Meta:
         model = Account
@@ -225,14 +193,15 @@ class AccountProfileSerializer(ModelSerializer):
 
 
 class AccountListSerializer(ModelSerializer):
-    account_name = serializers.CharField(source="get_account_name", required=False)
+    account_name = serializers.CharField(source="get_full_name", required=False)
     account_number = serializers.CharField(source="get_account_number", required=False)
     account_package = serializers.CharField(source="get_account_package", required=False)
     account_package_amount = serializers.CharField(source="get_account_package_amount", required=False)
-    parent_account_name = serializers.CharField(source="parent.get_account_name", required=False)
+    parent_account_name = serializers.CharField(source="parent.get_full_name", required=False)
     parent_account_number = serializers.CharField(source="parent.get_account_number", required=False)
-    referrer_account_name = serializers.CharField(source="referrer.get_account_name", required=False)
+    referrer_account_name = serializers.CharField(source="referrer.get_full_name", required=False)
     referrer_account_number = serializers.CharField(source="referrer.get_account_number", required=False)
+    user_status = serializers.CharField(source="user.is_active", required=False)
 
     class Meta:
         model = Account
@@ -247,6 +216,7 @@ class AccountListSerializer(ModelSerializer):
             "referrer_account_name",
             "referrer_account_number",
             "account_status",
+            "user_status",
             "created",
         ]
 
@@ -267,6 +237,7 @@ class AccountReferralsSerializer(ModelSerializer):
 
 
 class AccountWalletSerializer(ModelSerializer):
+    account_avatar = serializers.ImageField(source="avatar_info.file_attachment", required=False)
     account_name = serializers.CharField(source="get_account_name", required=False)
     account_number = serializers.CharField(source="get_account_number", required=False)
     wallet_amount = serializers.CharField(read_only=True)
@@ -274,6 +245,7 @@ class AccountWalletSerializer(ModelSerializer):
     class Meta:
         model = Account
         fields = [
+            "account_avatar",
             "account_name",
             "account_number",
             "wallet_amount",
@@ -286,7 +258,25 @@ class AvatarInfoSerializer(ModelSerializer):
         fields = ["file_attachment"]
 
 
-# Imported to User App
+class UserAccountAvatarSerializer(ModelSerializer):
+    account_avatar = serializers.ImageField(source="avatar_info.file_attachment", required=False)
+    account_name = serializers.CharField(source="get_full_name", required=False)
+    account_number = serializers.CharField(source="get_account_number", required=False)
+    package_name = serializers.CharField(source="package.package_name", required=False)
+    package_amount = serializers.CharField(source="package.package_amount", required=False)
+
+    class Meta:
+        model = Account
+        fields = [
+            "account_id",
+            "account_name",
+            "account_number",
+            "account_avatar",
+            "package_name",
+            "package_amount",
+        ]
+
+
 class AccountAvatarSerializer(ModelSerializer):
     avatar_info = AvatarInfoSerializer(many=True, required=False)
     account_name = serializers.CharField(read_only=True)
@@ -295,12 +285,6 @@ class AccountAvatarSerializer(ModelSerializer):
     class Meta:
         model = Account
         fields = ["account_id", "account_name", "account_number", "avatar_info"]
-
-
-class GenealogyAvatarSerializer(ModelSerializer):
-    class Meta:
-        model = AvatarInfo
-        fields = ["file_attachment"]
 
 
 class RecursiveField(serializers.BaseSerializer):
@@ -325,9 +309,11 @@ class RecursiveField(serializers.BaseSerializer):
 
 
 class GenealogyAccountSerializer(ModelSerializer):
-    avatar_info = GenealogyAvatarSerializer(many=True, required=False)
+    avatar = serializers.ImageField(source="avatar_info.file_attachment", required=False)
     account_name = serializers.CharField(source="get_account_name", required=False)
+    account_full_name = serializers.CharField(source="get_full_name", required=False)
     account_number = serializers.CharField(source="get_account_number", required=False)
+    package_name = serializers.CharField(source="package.package_name", required=False)
     all_left_children_count = serializers.CharField(read_only=True)
     all_right_children_count = serializers.CharField(read_only=True)
     depth = serializers.SerializerMethodField()
@@ -354,11 +340,13 @@ class GenealogyAccountSerializer(ModelSerializer):
         fields = [
             "account_id",
             "account_name",
+            "account_full_name",
             "account_number",
             "account_status",
+            "package_name",
             "parent_side",
             "depth",
-            "avatar_info",
+            "avatar",
             "children",
             "all_left_children_count",
             "all_right_children_count",
@@ -366,7 +354,7 @@ class GenealogyAccountSerializer(ModelSerializer):
 
 
 class BinaryAccountProfileParentSerializer(ModelSerializer):
-    avatar_info = GenealogyAvatarSerializer(many=True, required=False)
+    avatar = serializers.ImageField(source="avatar_info.file_attachment", required=False)
     account_name = serializers.CharField(source="get_account_name", required=False)
     account_number = serializers.CharField(source="get_account_number", required=False)
 
@@ -378,12 +366,12 @@ class BinaryAccountProfileParentSerializer(ModelSerializer):
             "account_name",
             "account_number",
             "account_status",
-            "avatar_info",
+            "avatar",
         ]
 
 
 class BinaryAccountProfileSerializer(ModelSerializer):
-    avatar_info = GenealogyAvatarSerializer(many=True, required=False)
+    avatar = serializers.ImageField(source="avatar_info.file_attachment", required=False)
     account_name = serializers.CharField(source="get_account_name", required=False)
     account_number = serializers.CharField(source="get_account_number", required=False)
     all_left_children_count = serializers.CharField(read_only=True)
@@ -414,7 +402,7 @@ class BinaryAccountProfileSerializer(ModelSerializer):
             "account_number",
             "account_status",
             "parent_side",
-            "avatar_info",
+            "avatar",
             "children",
             "all_left_children_count",
             "all_right_children_count",

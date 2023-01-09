@@ -18,10 +18,3 @@ class ParentSide(models.TextChoices):
 class Gender(models.TextChoices):
     MALE = "MALE", _("Male")
     FEMALE = "FEMALE", _("Female")
-
-
-class CodeStatus(models.TextChoices):
-    ACTIVE = "ACTIVE", _("Active")
-    USED = "USED", _("Used")
-    EXPIRED = "EXPIRED", _("Expired")
-    DEACTIVATED = "DEACTIVATED", _("Deactivated")

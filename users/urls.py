@@ -1,5 +1,17 @@
 from rest_framework.routers import DefaultRouter
-from users.api import *
+from users.api import (
+    UserViewSet,
+    UserLogsViewSet,
+    ContentTypeViewSet,
+    CheckUsernameView,
+    ChangeUsernameView,
+    CheckEmailAddressView,
+    ChangeEmailAddressView,
+    ChangePassword,
+    ResetPassword,
+    PasswordValidation,
+    RetrieveRolePermissionsView,
+)
 from django.urls import path
 
 router = DefaultRouter()
@@ -15,6 +27,7 @@ urlpatterns = [
     path("changepassword/", ChangePassword.as_view()),
     path("resetpassword/", ResetPassword.as_view()),
     path("checkpassword/", PasswordValidation.as_view()),
+    path("getpermissions/", RetrieveRolePermissionsView.as_view()),
 ]
 
 urlpatterns += router.urls

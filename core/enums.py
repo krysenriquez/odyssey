@@ -19,9 +19,7 @@ class CodeStatus(models.TextChoices):
 class Settings(models.TextChoices):
     CODE_EXPIRATION = "CODE_EXPIRATION", _("Code Expiration")
     POINT_VALUE_CONVERSION = "POINT_VALUE_CONVERSION", _("Point Value Conversion")
-    FLUSH_OUT_PENALTY_PERCENTAGE_WEAK = "FLUSH_OUT_PENALTY_PERCENTAGE_WEAK", _(
-        "Flush Out Penalty Weak Percentage Leg"
-    )
+    FLUSH_OUT_PENALTY_PERCENTAGE_WEAK = "FLUSH_OUT_PENALTY_PERCENTAGE_WEAK", _("Flush Out Penalty Weak Percentage Leg")
     FLUSH_OUT_PENALTY_PERCENTAGE_STRONG = "FLUSH_OUT_PENALTY_PERCENTAGE_STRONG", _(
         "Flush Out Penalty Strong Percentage Leg"
     )
@@ -43,11 +41,12 @@ class Settings(models.TextChoices):
 class ActivityType(models.TextChoices):
     # * --- C Wallet
     ENTRY = "ENTRY", _("Entry")  # * No Foreign Key to New Member Account
+    FRANCHISE_ENTRY = "FRANCHISE_ENTRY", _("Franchise Entry")  # * No Foreign Key to New Member Account
     PAYOUT = "PAYOUT", _("Payout")  # * Foreign Key to Cashout
     COMPANY_TAX = "COMPANY_TAX", _("Company Tax")  # * Foreign Key to Cashout
     # * --- B Wallet
     DIRECT_REFERRAL = "DIRECT_REFERRAL", _("Direct Referral")  # * Foreign Key to Sponsored Account
-    SALES_MATCH = "SALES_MATCH", _("Sales_Match")
+    SALES_MATCH = "SALES_MATCH", _("Sales Match")
     REFERRAL_BONUS = "REFERRAL_BONUS", _("Referral Bonus")
     GLOBAL_POOL_BONUS = "GLOBAL_POOL_BONUS", _("Global Pool Bonus")
     # * --- F Wallet
@@ -57,6 +56,7 @@ class ActivityType(models.TextChoices):
     # * --- PV Left and Right Wallet
     DOWNLINE_ENTRY = "DOWNLINE_ENTRY", _("Downline Entry")
     PV_SALES_MATCH = "PV_SALES_MATCH", _("Point Value Sales Match")
+    LEADERSHIP_BONUS = "LEADERSHIP_BONUS", _("Leadership Bonus")
     FLUSH_OUT_PENALTY = "FLUSH_OUT_PENALTY", _("Flush Out Penalty")
 
 
@@ -78,7 +78,9 @@ class WalletType(models.TextChoices):
     PV_TOTAL_WALLET = "PV_TOTAL_WALLET", _("Point Value Total Wallet")
 
 
-class BinaryType(models.TextChoices):
-    PAIRING = "PAIRING", _("Pairing")  # Waiting for Pairing
-    SALES_MATCH = "SALES_MATCH", _("Sales Match")  # Paired
-    FLUSHED_OUT = "FLUSHED_OUT", _("Flushed Out")
+class CashoutMethod(models.TextChoices):
+    GCASH = "GCash", _("GCash")
+    CEBUANA = "Cebuana", _("Cebuana")
+    PALAWAN_EXPRESS = "Palawan Express", _("Palawan Express")
+    UNION_BANK = "Union Bank", _("Union Bank")
+    BDO = "BDO", _("BDO")

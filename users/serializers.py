@@ -1,9 +1,8 @@
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
+from accounts.models import Account
 from users.models import *
-
-# from accounts.serializers import AccountAvatarSerializer
 
 
 class ResetPasswordSerializer(serializers.Serializer):
@@ -65,6 +64,20 @@ class UserLogsSerializer(ModelSerializer):
         fields = "__all__"
 
 
+class RolePermissionsSerializer(ModelSerializer):
+    permission_name = serializers.CharField(source="permission.permission_name", required=False)
+
+    class Meta:
+        model = RolePermissions
+        fields = [
+            "permission_name",
+            "can_create",
+            "can_retrieve",
+            "can_delete",
+            "can_update",
+        ]
+
+
 class UserSerializer(ModelSerializer):
     def create(self, validated_data):
         user = User.objects.create(**validated_data)
@@ -87,12 +100,3 @@ class UserSerializer(ModelSerializer):
             "username",
             "email_address",
         ]
-
-
-# class UserAccountSerializer(ModelSerializer):
-#     account_user = AccountAvatarSerializer(many=True, required=False)
-#     remaining = serializers.IntegerField(required=False)
-
-#     class Meta:
-#         model = User
-#         fields = ["account_user", "remaining"]

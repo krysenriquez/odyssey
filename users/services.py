@@ -1,6 +1,5 @@
 from users.models import User
 
-
 def create_new_user(request):
     data = {
         "username": request["username"],

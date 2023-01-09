@@ -97,8 +97,35 @@ class UserAdmin(BaseUserAdmin):
     filter_horizontal = ()
 
 
+class RolePermissionsAdmin(admin.ModelAdmin):
+    list_display = (
+        "user_type",
+        "permission",
+        "can_create",
+        "can_retrieve",
+        "can_delete",
+        "can_update",
+    )
+    list_filter = ("user_type", "permission")
+    search_fields = (
+        "user_type",
+        "permission",
+    )
+    ordering = (
+        "id",
+        "user_type",
+        "permission",
+    )
+    filter_horizontal = ()
+
+    class Meta:
+        model = RolePermissions
+
+
 users_models = [UserLogs, LogDetails]
 admin.site.register(LogEntry)
 admin.site.unregister(Group)
 admin.site.register(User, UserAdmin)
+admin.site.register(Permission)
+admin.site.register(RolePermissions, RolePermissionsAdmin)
 admin.site.register(users_models)

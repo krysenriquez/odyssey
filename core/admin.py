@@ -1,13 +1,5 @@
 from django.contrib import admin
-from core.models import (
-    Setting,
-    Package,
-    ReferralBonus,
-    LeadershipBonus,
-    Code,
-    Activity,
-    ActivityDetails,
-)
+from core.models import Setting, Package, ReferralBonus, LeadershipBonus, Code, Activity, ActivityDetails, Franchisee
 
 
 class ActivityAdmin(admin.ModelAdmin):
@@ -28,3 +20,4 @@ admin.site.register(LeadershipBonus)
 admin.site.register(Code)
 admin.site.register(Activity, ActivityAdmin)
 admin.site.register(ActivityDetails)
+admin.site.register(Franchisee)

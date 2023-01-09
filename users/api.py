@@ -1,15 +1,24 @@
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+from django.db.models import Q, Prefetch, F, Value as V, Count
+from django.db.models.functions import Concat
 from rest_framework import status, views, permissions
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
+from difflib import SequenceMatcher
 from users.serializers import *
 from users.models import *
-from difflib import SequenceMatcher
+from accounts.models import Account
+from accounts.enums import AccountStatus
+from core.services import get_setting
+from core.enums import Settings
+from vanguard.permissions import IsDeveloperUser, IsAdminUser, IsStaffUser, IsMemberUser
+from vanguard.throttle import TenPerMinuteAnonThrottle
 
 
 class CheckUsernameView(views.APIView):
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = []
+    throttle_classes = [TenPerMinuteAnonThrottle]
 
     def post(self, request, *args, **kwargs):
         username = request.data.get("username")
@@ -19,13 +28,13 @@ class CheckUsernameView(views.APIView):
             return Response(data={"message": "Username available."}, status=status.HTTP_200_OK)
         else:
             return Response(
-                data={"message": "Sorry, Username unavailable."},
+                data={"message": "Username unavailable."},
                 status=status.HTTP_409_CONFLICT,
             )
 
 
 class ChangeUsernameView(views.APIView):
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
 
     def post(self, request, *args, **kwargs):
         username = request.data.get("username")
@@ -38,7 +47,7 @@ class ChangeUsernameView(views.APIView):
         else:
             if str(user.pk) != userId:
                 return Response(
-                    data={"message": "Sorry, Username unavailable."},
+                    data={"message": "Username unavailable."},
                     status=status.HTTP_409_CONFLICT,
                 )
             else:
@@ -49,7 +58,8 @@ class ChangeUsernameView(views.APIView):
 
 
 class CheckEmailAddressView(views.APIView):
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = []
+    throttle_classes = [TenPerMinuteAnonThrottle]
 
     def post(self, request, *args, **kwargs):
         email_address = request.data.get("email_address")
@@ -64,7 +74,7 @@ class CheckEmailAddressView(views.APIView):
                 )
             else:
                 return Response(
-                    data={"message": "Sorry, Email Address unavailable."},
+                    data={"message": "Email Address unavailable."},
                     status=status.HTTP_409_CONFLICT,
                 )
         except ValidationError:
@@ -75,7 +85,7 @@ class CheckEmailAddressView(views.APIView):
 
 
 class ChangeEmailAddressView(views.APIView):
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
 
     def post(self, request, *args, **kwargs):
         email_address = request.data.get("email_address")
@@ -110,7 +120,7 @@ class ChangeEmailAddressView(views.APIView):
 
 class ChangePassword(views.APIView):
     model = User
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
 
     def get_object(self, request, queryset=None):
         user = User.objects.get(id=request)
@@ -142,7 +152,7 @@ class ChangePassword(views.APIView):
 
 class ResetPassword(views.APIView):
     model = User
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
 
     def get_object(self, request, queryset=None):
         user = User.objects.get(id=request)
@@ -163,7 +173,7 @@ class ResetPassword(views.APIView):
 
 
 class PasswordValidation(views.APIView):
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
 
     def post(self, request, *args, **kwargs):
         username = request.data.get("username")
@@ -182,40 +192,10 @@ class PasswordValidation(views.APIView):
             )
 
 
-# class UserAccountViewSet(ModelViewSet):
-#     queryset = User.objects.all()
-#     serializer_class = UserAccountSerializer
-#     permission_classes = (permissions.IsAuthenticated,)
-#     http_method_names = ["get"]
-
-#     def get_queryset(self):
-#         queryset = User.objects.exclude(is_active=False)
-#         user = self.request.user.id
-
-#         if user is not None:
-#             max_account_limit = settings.filter(property=Property.MAX_USER_ACCOUNT_LIMIT).first().value
-
-#             queryset = (
-#                 queryset.prefetch_related(
-#                     Prefetch(
-#                         "account_user",
-#                         queryset=Account.objects.annotate(account_name=Concat(F("first_name"), V(" "), F("last_name")))
-#                         .filter(is_deleted=False, account_status=AccountStatus.ACTIVE)
-#                         .order_by("id"),
-#                     )
-#                 )
-#                 .annotate(remaining=max_account_limit - Count("account_user"))
-#                 .filter(id=user)
-#                 .exclude(is_active=False)
-#             )
-
-#             return queryset
-
-
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
     http_method_names = ["get"]
 
     def get_queryset(self):
@@ -229,7 +209,7 @@ class UserViewSet(ModelViewSet):
 class UserLogsViewSet(ModelViewSet):
     queryset = UserLogs.objects.all()
     serializer_class = UserLogsSerializer
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
     http_method_names = ["get"]
 
     def get_queryset(self):
@@ -250,7 +230,7 @@ class UserLogsViewSet(ModelViewSet):
 class ContentTypeViewSet(ModelViewSet):
     queryset = ContentType.objects.all()
     serializer_class = ContentTypeSerializer
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
     http_method_names = ["get"]
 
     def get_queryset(self):
@@ -261,3 +241,15 @@ class ContentTypeViewSet(ModelViewSet):
             queryset = queryset.filter(model=model)
 
         return queryset
+
+
+class RetrieveRolePermissionsView(views.APIView):
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser]
+
+    def post(self, request, *args, **kwargs):
+        role_permission = RolePermissions.objects.filter(user_type=request.user.user_type)
+        serializer = RolePermissionsSerializer(role_permission, many=True)
+        return Response(
+            data={"permissions": serializer.data},
+            status=status.HTTP_200_OK,
+        )

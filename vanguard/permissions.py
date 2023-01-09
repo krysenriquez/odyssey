@@ -28,5 +28,5 @@ class IsStaffUser(BasePermission):
 class IsMemberUser(BasePermission):
     def has_permission(self, request: Type[HttpRequest], view):
         if request.user.user_type == UserType.MEMBER:
-            return bool(request.user and request.user.user_type == UserType.STAFF)
+            return bool(request.user and request.user.user_type == UserType.MEMBER)
         return False

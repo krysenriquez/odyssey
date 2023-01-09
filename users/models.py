@@ -112,6 +112,11 @@ class User(AbstractUser):
             accounts.append(account)
         return accounts
 
+    def update_is_active(self):
+        self.is_active = not self.is_active
+        self.save()
+        return True
+
 
 class UserLogs(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_logs")
@@ -167,3 +172,35 @@ class LogDetails(models.Model):
 
     def __str__(self):
         return "%s - %s" % (self.user_logs, self.action)
+
+
+class Permission(models.Model):
+    permission_name = models.CharField(
+        max_length=255,
+    )
+
+    def __str__(self):
+        return "%s" % (self.permission_name)
+
+
+class RolePermissions(models.Model):
+    user_type = models.CharField(
+        max_length=10,
+        choices=UserType.choices,
+        default=UserType.MEMBER,
+    )
+    permission = models.ForeignKey(Permission, on_delete=models.CASCADE, related_name="roles")
+    can_create = models.BooleanField(default=False)
+    can_retrieve = models.BooleanField(default=False)
+    can_delete = models.BooleanField(default=False)
+    can_update = models.BooleanField(default=False)
+
+    def __str__(self):
+        return "%s : %s : %s %s %s %s" % (
+            self.user_type,
+            self.permission,
+            self.can_create,
+            self.can_retrieve,
+            self.can_delete,
+            self.can_update,
+        )

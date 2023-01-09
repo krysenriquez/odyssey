@@ -1,10 +1,13 @@
 from rest_framework import status, views, permissions
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
-from django.db.models import Q, Prefetch, F, Value as V, query, Count, Sum, Case, When
+from django.core.signing import Signer, BadSignature
+from django.db.models import Q, Prefetch, F, Value as V, query, Count, Sum, Case, When, DecimalField
 from django.db.models.functions import Concat, Coalesce
 from vanguard.permissions import IsDeveloperUser, IsAdminUser, IsStaffUser, IsMemberUser
+from vanguard.throttle import FivePerMinuteAnonThrottle, FifteenPerMinuteAnonThrottle
 from accounts.serializers import (
+    CashoutMethodSerializer,
     AccountSerializer,
     AccountProfileSerializer,
     AccountListSerializer,
@@ -12,13 +15,40 @@ from accounts.serializers import (
     AccountWalletSerializer,
     GenealogyAccountSerializer,
     BinaryAccountProfileSerializer,
+    UserAccountAvatarSerializer,
 )
-from accounts.models import Account
+from accounts.models import Account, CashoutMethod
 from accounts.enums import ParentSide
-from accounts.services import process_create_account_request, activate_account, verify_account_creation
+from accounts.services import (
+    is_valid_uuid,
+    process_create_account_request,
+    activate_account,
+    update_user_status,
+    verify_account_creation,
+    redact_string,
+    verify_account_name,
+    verify_parent_account,
+    verify_parent_side,
+    verify_sponsor_account,
+)
 from core.models import Code
-from core.enums import CodeStatus, WalletType, ActivityType
-from core.services import comp_plan
+from core.enums import ActivityStatus, CodeStatus, WalletType, ActivityType, CodeType
+from core.services import comp_plan, create_leadership_bonus_activity, verify_code_details
+from users.models import User
+
+
+class UserAccountAvatarViewSet(ModelViewSet):
+    queryset = Account.objects.all()
+    serializer_class = UserAccountAvatarSerializer
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
+
+    def get_queryset(self):
+        user = User.objects.get(id=self.request.user.pk, is_active=True)
+
+        if user is not None:
+            queryset = Account.objects.filter(user=user)
+
+            return queryset
 
 
 class AccountProfileViewSet(ModelViewSet):
@@ -30,6 +60,19 @@ class AccountProfileViewSet(ModelViewSet):
     def get_queryset(self):
         account_id = self.request.query_params.get("account_id", None)
         queryset = Account.objects.exclude(is_deleted=True).filter(account_id=account_id).all()
+        if queryset.exists():
+            return queryset
+
+
+class AccountCashoutMethodsViewSet(ModelViewSet):
+    queryset = CashoutMethod.objects.all()
+    serializer_class = CashoutMethodSerializer
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
+    http_method_names = ["get"]
+
+    def get_queryset(self):
+        account_id = self.request.query_params.get("account_id", None)
+        queryset = CashoutMethod.objects.filter(account__account_id=account_id).all()
         if queryset.exists():
             return queryset
 
@@ -73,7 +116,7 @@ class TopAccountWalletViewSet(ModelViewSet):
                         Case(
                             When(
                                 Q(activity__activity_type=ActivityType.CASHOUT)
-                                & ~Q(activity__wallet=WalletType.C_WALLET),
+                                & ~Q(activity__status=ActivityStatus.DENIED),
                                 then=0 - F("activity__activity_amount"),
                             ),
                             When(
@@ -84,6 +127,7 @@ class TopAccountWalletViewSet(ModelViewSet):
                         )
                     ),
                     0,
+                    output_field=DecimalField(),
                 )
             )
             .all()
@@ -157,9 +201,7 @@ class GenealogyAccountAdminViewSet(ModelViewSet):
 
                 for member in queryset:
                     member.all_left_children_count = len(member.get_all_children_side(parent_side=ParentSide.LEFT))
-                    member.all_right_children_count = len(
-                        member.get_all_children_side(parent_side=ParentSide.RIGHT)
-                    )
+                    member.all_right_children_count = len(member.get_all_children_side(parent_side=ParentSide.RIGHT))
 
                 return queryset
 
@@ -180,10 +222,20 @@ class GenealogyAccountMemberViewSet(ModelViewSet):
     http_method_names = ["get"]
 
     def get_queryset(self):
-        queryset = Account.objects.prefetch_related(
-            Prefetch(
-                "children",
-                queryset=Account.objects.prefetch_related(
+        account_id = self.request.query_params.get("account_id", None)
+        account = []
+
+        if account_id is not None and is_valid_uuid(account_id):
+            account = Account.objects.get(account_id=account_id)
+        if account_id is not None and is_valid_uuid(account_id) == False:
+            account = Account.objects.get(id=account_id.lstrip("0"))
+
+        if account is not None:
+            user_account = Account.objects.get(user=self.request.user)
+            children = user_account.get_all_children()
+
+            if account in children or account == user_account:
+                queryset = Account.objects.prefetch_related(
                     Prefetch(
                         "children",
                         queryset=Account.objects.prefetch_related(
@@ -195,7 +247,14 @@ class GenealogyAccountMemberViewSet(ModelViewSet):
                                         queryset=Account.objects.prefetch_related(
                                             Prefetch(
                                                 "children",
-                                                queryset=Account.objects.order_by("parent_side").all(),
+                                                queryset=Account.objects.prefetch_related(
+                                                    Prefetch(
+                                                        "children",
+                                                        queryset=Account.objects.order_by("parent_side").all(),
+                                                    )
+                                                )
+                                                .order_by("parent_side")
+                                                .all(),
                                             )
                                         )
                                         .order_by("parent_side")
@@ -208,49 +267,14 @@ class GenealogyAccountMemberViewSet(ModelViewSet):
                         )
                         .order_by("parent_side")
                         .all(),
-                    )
-                )
-                .order_by("parent_side")
-                .all(),
-            ),
-        ).all()
-
-        account_id = self.request.query_params.get("account_id", None)
-        account_number = self.request.query_params.get("account_number", None)
-
-        if account_id is None and account_number is not None and self.request.user.user_type:
-            queryset = queryset.filter(id=account_number.lstrip("0"))
-
-            for member in queryset:
-                member.all_left_children_count = len(member.get_all_children_side(parent_side=ParentSide.LEFT))
-                member.all_right_children_count = len(member.get_all_children_side(parent_side=ParentSide.RIGHT))
-
-            return queryset
-
-        elif account_id is not None and account_number is not None:
-            account = Account.objects.get(account_id=account_id)
-            children = account.get_all_children()
-            child = Account.objects.get(id=account_number.lstrip("0"))
-
-            if child in children or child == account:
-                queryset = queryset.filter(id=account_number.lstrip("0"))
+                    ),
+                ).filter(id=account.pk)
 
                 for member in queryset:
                     member.all_left_children_count = len(member.get_all_children_side(parent_side=ParentSide.LEFT))
-                    member.all_right_children_count = len(
-                        member.get_all_children_side(parent_side=ParentSide.RIGHT)
-                    )
+                    member.all_right_children_count = len(member.get_all_children_side(parent_side=ParentSide.RIGHT))
 
                 return queryset
-
-        elif account_id is not None and account_number is None:
-            queryset = queryset.filter(account_id=account_id)
-
-            for member in queryset:
-                member.all_left_children_count = len(member.get_all_children_side(parent_side=ParentSide.LEFT))
-                member.all_right_children_count = len(member.get_all_children_side(parent_side=ParentSide.RIGHT))
-
-            return queryset
 
 
 class BinaryAccountProfileViewSet(ModelViewSet):
@@ -280,20 +304,32 @@ class BinaryAccountProfileViewSet(ModelViewSet):
 
 # Custom Views POST
 class CreateAccountView(views.APIView):
-    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
+    permission_classes = []
+    throttle_classes = [FifteenPerMinuteAnonThrottle]
 
     def post(self, request, *args, **kwargs):
         is_verified = verify_account_creation(request)
         if is_verified:
-            processed_request, package, code = process_create_account_request(request)
-            serializer = AccountSerializer(data=processed_request)
+            processed_request, code, package = process_create_account_request(request)
+            if not processed_request:
+                return Response(
+                    data={"message": "Unable to create Account."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
+            serializer = AccountSerializer(data=processed_request)
             if serializer.is_valid():
                 new_member = serializer.save()
-                # code.update_status()
-                comp_plan(request, new_member, package)
-                activate_account(new_member)
-                return Response(data={"message": "Account created."}, status=status.HTTP_201_CREATED)
+                is_valid = comp_plan(request, new_member, package, code, True)
+                if is_valid:
+                    activate_account(new_member)
+                    code.update_status(Account)
+                    return Response(data={"message": "Account created."}, status=status.HTTP_201_CREATED)
+
+                return Response(
+                    data={"message": "Unable to create Account."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             else:
                 return Response(
                     data={"message": "Unable to create Account."},
@@ -330,81 +366,218 @@ class VerifyAccountView(views.APIView):
             )
 
 
-class VerifySponsorCodeView(views.APIView):
-    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
+class VerifySponsorAccountNumberView(views.APIView):
+    permission_classes = []
+    throttle_classes = [FifteenPerMinuteAnonThrottle]
 
     def post(self, request, *args, **kwargs):
-        code_type = request.data.get("code_type")
-        code = request.data.get("code")
-        parent = request.data.get("parent")
-
-        try:
-            activation_code = Code.objects.get(code_type=code_type, code=code)
-            activation_code.update_status()
-        except Code.DoesNotExist:
-            return Response(
-                data={"message": code_type.title() + " Code does not exist."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        try:
-            upline = Account.objects.get(id=parent)
-        except Account.DoesNotExist:
-            return Response(
-                data={"message": "Upline Account does Not Exist."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        if activation_code.account:
+        sponsor_account_id = request.data.get("sponsor_account_id").lstrip("0")
+        if sponsor_account_id:
             try:
-                sponsor = Account.objects.get(pk=activation_code.account.pk)
-                children = sponsor.get_all_children()
+                account = Account.objects.get(id=sponsor_account_id)
+                fullname = redact_string(account.get_full_name())
+                return Response(
+                    data={"message": "Sponsor Account Number verified", "account": fullname},
+                    status=status.HTTP_200_OK,
+                )
             except Account.DoesNotExist:
                 return Response(
-                    data={"message": "Sponsor Account does Not Exist."},
+                    data={"message": "Invalid Sponsor Account Number"},
                     status=status.HTTP_404_NOT_FOUND,
                 )
         else:
             return Response(
-                data={"message": code_type.title() + " Code " + code + " not linked to any Account."},
+                data={"message": "Invalid Sponsor Account Number"},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        if upline in children or sponsor == upline:
-            if activation_code.status == CodeStatus.DEACTIVATED:
+
+class VerifyParentAccountNumberView(views.APIView):
+    permission_classes = []
+    throttle_classes = [FifteenPerMinuteAnonThrottle]
+
+    def post(self, request, *args, **kwargs):
+        parent_account_id = request.data.get("parent_account_id").lstrip("0")
+        if parent_account_id:
+            is_verified, parent = verify_parent_account(request)
+            if is_verified:
+                fullname = redact_string(parent.get_full_name())
                 return Response(
-                    data={
-                        "message": code_type.title() + " Code currently deactivated.",
-                    },
-                    status=status.HTTP_410_GONE,
-                )
-            elif activation_code.status == CodeStatus.USED:
-                return Response(
-                    data={
-                        "message": code_type.title() + " Code already been used.",
-                    },
-                    status=status.HTTP_409_CONFLICT,
-                )
-            elif activation_code.status == CodeStatus.EXPIRED:
-                return Response(
-                    data={
-                        "message": code_type.title() + " Code has already expired.",
-                    },
-                    status=status.HTTP_409_CONFLICT,
+                    data={"message": "Parent Account Number verified", "account": fullname},
+                    status=status.HTTP_200_OK,
                 )
             else:
                 return Response(
-                    data={
-                        "message": code_type.title() + " Code valid.",
-                        "sponsor": str(sponsor.id).zfill(5),
-                        "sponsor_name": sponsor.first_name + " " + sponsor.last_name,
-                    },
-                    status=status.HTTP_200_OK,
+                    data={"message": "Invalid Parent Account Number"},
+                    status=status.HTTP_404_NOT_FOUND,
                 )
         else:
             return Response(
-                data={
-                    "message": code_type.title() + " Code could only be used on Direct Downlines.",
-                },
-                status=status.HTTP_403_FORBIDDEN,
+                data={"message": "Invalid Parent Account Number"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+
+class VerifyParentSideView(views.APIView):
+    permission_classes = []
+    throttle_classes = [FifteenPerMinuteAnonThrottle]
+
+    def post(self, request, *args, **kwargs):
+        is_verified = verify_parent_side(request)
+        if is_verified:
+            return Response(
+                data={"message": "Extreme side validation success"},
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response(
+                data={"message": "Extreme side validation failed"},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+
+class VerifyExtremeSide(views.APIView):
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
+
+    def post(self, request, *args, **kwargs):
+        can_sponsor = verify_sponsor_account(request)
+        if can_sponsor:
+            return Response(
+                data={"message": "OK"},
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response(
+                data={"message": "Extreme side validation failed"},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+
+class VerifyAccountName(views.APIView):
+    permission_classes = []
+    throttle_classes = [FifteenPerMinuteAnonThrottle]
+
+    def post(self, request, *args, **kwargs):
+        is_verified = verify_account_name(request)
+        if is_verified:
+            return Response(
+                data={"message": "Account Name validation success"},
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response(
+                data={"message": "Account Name validation failed"},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+
+class UpgradeAccountView(views.APIView):
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
+
+    def post(self, request, *args, **kwargs):
+        is_verified, message, activation_code, package = verify_code_details(request)
+
+        if not is_verified:
+            return Response(
+                data={"message": message},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if activation_code.code_type != CodeType.UPGRADE or package.is_franchise:
+            return Response(
+                data={"message": "Code not valid. Must be an Upgrade Code."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        account = Account.objects.get(account_id=request.data["account_id"])
+        if package is None and account is None:
+            return Response(
+                data={"message": "Unable to upgrade Account."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if package.package_amount <= account.package.package_amount:
+            return Response(
+                data={"message": "Downgrade Account not available."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        data = {"activation_code": activation_code.pk, "package": package.pk}
+        serializer = AccountSerializer(account, data=data, partial=True)
+        if serializer.is_valid():
+            upgraded_member = serializer.save()
+            is_valid = comp_plan(request, upgraded_member, package, activation_code, False)
+            if is_valid:
+                activation_code.update_status(Account)
+                return Response(data={"message": "Account upgraded."}, status=status.HTTP_200_OK)
+
+            return Response(
+                data={"message": "Unable to upgrade Account."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(
+            data={"message": "Unable to upgrade Account."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class VerifyCreateAccountLinkView(views.APIView):
+    permission_classes = []
+
+    def get(self, request, *args, **kwargs):
+        signer = Signer()
+        data = self.request.query_params.get("data", None)
+        try:
+            unsigned_obj = signer.unsign_object(data)
+            return Response(
+                data=unsigned_obj,
+                status=status.HTTP_200_OK,
+            )
+        except BadSignature:
+            return Response(
+                data={"message": "Invalid URL"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    def post(self, request, *args, **kwargs):
+        signer = Signer()
+        signed_obj = signer.sign_object(request.data)
+        url = request.build_absolute_uri("/odcwebapi/accounts/verify?data=" + signed_obj)
+        return Response(
+            data={"url": url},
+            status=status.HTTP_200_OK,
+        )
+
+
+class UpdateUserStatusView(views.APIView):
+    permission_classes = []
+
+    def post(self, request, *args, **kwargs):
+        is_updated = update_user_status(request)
+        if is_updated:
+            return Response(
+                data={"message": "Account access updated"},
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response(
+                data={"message": "Unable to disable Account"},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+
+class TestCreateView(views.APIView):
+    permission_classes = []
+
+    def post(self, request, *args, **kwargs):
+        can_sponsor = verify_sponsor_account(request)
+        if can_sponsor:
+            return Response(
+                data={"message": "OK"},
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response(
+                data={"message": "Extreme side validation failed"},
+                status=status.HTTP_409_CONFLICT,
             )
