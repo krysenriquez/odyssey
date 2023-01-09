@@ -7,7 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-2tj+!nv*4b7yy!i+#%m24cqv=4+nzwsaxh-dcw&k31po9exolv"
 
 DEBUG = True
-LIVE = False
+LIVE = True
 
 if DEBUG:
     ALLOWED_HOSTS = ["*"]
@@ -139,7 +139,7 @@ if LIVE:
         DATABASES = {
             "default": {
                 "ENGINE": "django.db.backends.postgresql_psycopg2",
-                "NAME": "odysseydb",
+                "NAME": "odysseydb_uat",
                 "USER": "odyssey",
                 "PASSWORD": "ody$$3y",
                 "HOST": "localhost",
