@@ -9,9 +9,11 @@ SECRET_KEY = "django-insecure-2tj+!nv*4b7yy!i+#%m24cqv=4+nzwsaxh-dcw&k31po9exolv
 DEBUG = True
 LIVE = False
 
-if DEBUG:
+if DEBUG and not LIVE:
     ALLOWED_HOSTS = ["*"]
 
+if LIVE:
+    ALLOWED_HOSTS = ["https://member.topchoiceinternational.com", "https://admin.topchoiceinternational.com"]
 
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ALLOW_CREDENTIALS = True
