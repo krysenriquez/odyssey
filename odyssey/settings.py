@@ -7,25 +7,37 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-2tj+!nv*4b7yy!i+#%m24cqv=4+nzwsaxh-dcw&k31po9exolv"
 
 DEBUG = True
-LIVE = True
+LIVE = False
 
 if DEBUG:
     ALLOWED_HOSTS = ["*"]
 
+
 CORS_ORIGIN_ALLOW_ALL = False
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3001",
-    "http://127.0.0.1:3001",
-    "http://localhost:3002",
-    "http://127.0.0.1:3002",
-]
 CORS_ALLOW_CREDENTIALS = True
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3001",
-    "http://127.0.0.1:3001",
-    "http://localhost:3002",
-    "http://127.0.0.1:3002",
-]
+
+if LIVE:
+    CORS_ALLOWED_ORIGINS = [
+        "https://member.topchoiceinternational.com",
+        "https://admin.topchoiceinternational.com",
+    ]
+    CSRF_TRUSTED_ORIGINS = [
+        "https://member.topchoiceinternational.com",
+        "https://admin.topchoiceinternational.com",
+    ]
+else:
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:3001",
+        "http://127.0.0.1:3001",
+        "http://localhost:3002",
+        "http://127.0.0.1:3002",
+    ]
+    CSRF_TRUSTED_ORIGINS = [
+        "http://localhost:3001",
+        "http://127.0.0.1:3001",
+        "http://localhost:3002",
+        "http://127.0.0.1:3002",
+    ]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -213,6 +225,8 @@ STATICFILES_DIRS = [
 
 if not DEBUG:
     STATIC_ROOT = Path(BASE_DIR, "static_cdn")
+
+STATIC_ROOT = Path(BASE_DIR, "static_cdn")
 
 MEDIA_ROOT = Path.absolute(Path(BASE_DIR, "statics", "media"))
 MEDIA_URL = "/media/"
