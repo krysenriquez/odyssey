@@ -44,6 +44,7 @@ class PackagesSerializer(ModelSerializer):
             "package_name",
             "package_amount",
             "has_pairing",
+            "is_franchise",
             "point_value",
             "flush_out_limit",
             "is_bco",

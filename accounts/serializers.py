@@ -314,6 +314,7 @@ class GenealogyAccountSerializer(ModelSerializer):
     account_full_name = serializers.CharField(source="get_full_name", required=False)
     account_number = serializers.CharField(source="get_account_number", required=False)
     package_name = serializers.CharField(source="package.package_name", required=False)
+    path = serializers.ListField(source="get_all_parents_side", required=False)
     all_left_children_count = serializers.CharField(read_only=True)
     all_right_children_count = serializers.CharField(read_only=True)
     depth = serializers.SerializerMethodField()
@@ -350,6 +351,7 @@ class GenealogyAccountSerializer(ModelSerializer):
             "children",
             "all_left_children_count",
             "all_right_children_count",
+            "path",
         ]
 
 

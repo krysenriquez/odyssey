@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from django.core.signing import Signer, BadSignature
 from django.db.models import Q, Prefetch, F, Value as V, query, Count, Sum, Case, When, DecimalField
 from django.db.models.functions import Concat, Coalesce
+from django.shortcuts import get_object_or_404
 from vanguard.permissions import IsDeveloperUser, IsAdminUser, IsStaffUser, IsMemberUser
 from vanguard.throttle import FivePerMinuteAnonThrottle, FifteenPerMinuteAnonThrottle
 from accounts.serializers import (
@@ -226,9 +227,10 @@ class GenealogyAccountMemberViewSet(ModelViewSet):
         account = []
 
         if account_id is not None and is_valid_uuid(account_id):
+            account = get_object_or_404(Account, account_id=account_id)
             account = Account.objects.get(account_id=account_id)
         if account_id is not None and is_valid_uuid(account_id) == False:
-            account = Account.objects.get(id=account_id.lstrip("0"))
+            account = get_object_or_404(Account, id=account_id.lstrip("0"))
 
         if account is not None:
             user_account = Account.objects.get(user=self.request.user)
