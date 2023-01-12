@@ -310,7 +310,7 @@ class CreateAccountView(views.APIView):
     throttle_classes = [FifteenPerMinuteAnonThrottle]
 
     def post(self, request, *args, **kwargs):
-        is_verified = verify_account_creation(request)
+        is_verified = verify_account_creation(request) and verify_sponsor_account(request)
         if is_verified:
             processed_request, code, package = process_create_account_request(request)
             if not processed_request:

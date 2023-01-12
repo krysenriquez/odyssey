@@ -123,7 +123,7 @@ def verify_sponsor_account(request):
 
     grandparents = parent.get_all_parents_with_extreme_side(parent_side=request.data["parent_side"])
     grandparents.append({"account": parent})
-
+    
     can_sponsor = next((grandparent for grandparent in grandparents if grandparent["account"] == sponsor), [])
 
     return bool(can_sponsor)
