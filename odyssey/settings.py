@@ -50,6 +50,7 @@ if LIVE:
         "member.topchoiceinternational.com",
         "admin.topchoiceinternational.com",
         "odyssey.topchoiceinternational.com",
+        gi,
     ]
 else:
     CORS_ALLOWED_ORIGINS = [
@@ -181,7 +182,7 @@ if LIVE:
                 "USER": "odyssey",
                 "PASSWORD": "ody$$3y",
                 "HOST": "localhost",
-                "PORT": "5433",
+                "PORT": "5432",
             }
         }
     else:
@@ -192,7 +193,7 @@ if LIVE:
                 "USER": "odyssey",
                 "PASSWORD": "ody$$3y",
                 "HOST": "localhost",
-                "PORT": "5433",
+                "PORT": "5432",
             }
         }
 else:
