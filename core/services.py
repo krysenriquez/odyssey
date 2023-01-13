@@ -590,14 +590,19 @@ def create_fifth_pairing(request, account=None, pv_sales_match_pk=None):
         .get("total")
     )
 
-    remaining_fifth_pair_amount = pv_total_wallet - (total_fifth_pair_amount / fifth_pair_percentage)
-    fifth_pair_pv_amount = (remaining_fifth_pair_amount - (remaining_fifth_pair_amount % 100)) * fifth_pair_percentage
+    total_fifth_pair_pv_amount = total_fifth_pair_amount / pv_conversion
 
-    if fifth_pair_pv_amount:
+    remaining_fifth_pair_pv_amount = pv_total_wallet - (total_fifth_pair_pv_amount / fifth_pair_percentage)
+
+    fifth_pair_pv_match = (
+        remaining_fifth_pair_pv_amount - (remaining_fifth_pair_pv_amount % 100)
+    ) * fifth_pair_percentage
+
+    if fifth_pair_pv_match:
         fifth_pair = create_activity(
             account=account,
             activity_type=ActivityType.FIFTH_PAIR,
-            activity_amount=fifth_pair_pv_amount * pv_conversion,
+            activity_amount=fifth_pair_pv_match * pv_conversion,
             status=ActivityStatus.DONE,
             wallet=WalletType.GC_WALLET,
             content_type=content_type,
