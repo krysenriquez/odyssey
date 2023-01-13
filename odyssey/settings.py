@@ -20,6 +20,9 @@ if LIVE:
         "http://member.topchoiceinternational.com",
         "http://admin.topchoiceinternational.com",
         "http://odyssey.topchoiceinternational.com",
+        "member.topchoiceinternational.com",
+        "admin.topchoiceinternational.com",
+        "odyssey.topchoiceinternational.com",
     ]
 
 CORS_ORIGIN_ALLOW_ALL = False
@@ -33,6 +36,9 @@ if LIVE:
         "http://member.topchoiceinternational.com",
         "http://admin.topchoiceinternational.com",
         "http://odyssey.topchoiceinternational.com",
+        "member.topchoiceinternational.com",
+        "admin.topchoiceinternational.com",
+        "odyssey.topchoiceinternational.com",
     ]
     CSRF_TRUSTED_ORIGINS = [
         "https://member.topchoiceinternational.com",
@@ -41,6 +47,9 @@ if LIVE:
         "http://member.topchoiceinternational.com",
         "http://admin.topchoiceinternational.com",
         "http://odyssey.topchoiceinternational.com",
+        "member.topchoiceinternational.com",
+        "admin.topchoiceinternational.com",
+        "odyssey.topchoiceinternational.com",
     ]
 else:
     CORS_ALLOWED_ORIGINS = [
