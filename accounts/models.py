@@ -130,12 +130,20 @@ class Account(models.Model):
             self.parent.get_all_parents_with_side(parents, level)
         return parents
 
-    def get_all_parents_side(self, sides=None, level=None):
+    def get_all_parents_side(self, sides=None, level=None, parent_id=None):
+        if sides is None:
+            sides = []
+        if self.parent and str(self.account_id) != parent_id:
+            sides.append(self.parent_side)
+            self.parent.get_all_parents_side(sides, level, parent_id)
+        return sides
+
+    def get_all_parents_side_up_to_main(self, sides=None, level=None):
         if sides is None:
             sides = []
         if self.parent:
             sides.append(self.parent_side)
-            self.parent.get_all_parents_side(sides, level)
+            self.parent.get_all_parents_side_up_to_main(sides, level)
         return sides
 
     def get_all_parents_with_extreme_side(self, parents=None, level=None, parent_side=None):

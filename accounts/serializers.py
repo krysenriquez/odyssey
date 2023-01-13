@@ -292,7 +292,6 @@ class RecursiveField(serializers.BaseSerializer):
         parent = self.parent
         if isinstance(parent, serializers.ListSerializer):
             parent = parent.parent
-
         depth = getattr(parent, "depth", 1)
         ParentSerializer = self.parent.parent.__class__
         serializer = ParentSerializer(value, context=self.context)
@@ -314,12 +313,11 @@ class GenealogyAccountSerializer(ModelSerializer):
     account_full_name = serializers.CharField(source="get_full_name", required=False)
     account_number = serializers.CharField(source="get_account_number", required=False)
     package_name = serializers.CharField(source="package.package_name", required=False)
-    path = serializers.ListField(source="get_all_parents_side", required=False)
     all_left_children_count = serializers.CharField(read_only=True)
     all_right_children_count = serializers.CharField(read_only=True)
     depth = serializers.SerializerMethodField()
 
-    def __init__(self, *args, depth=0, **kwargs):
+    def __init__(self, *args, depth=0, path=[], **kwargs):
         super().__init__(*args, **kwargs)
         self.depth = depth
 
@@ -334,6 +332,19 @@ class GenealogyAccountSerializer(ModelSerializer):
             del fields["children"]
 
         return fields
+
+    def to_representation(self, instance):
+        request = self.context["request"]
+        account_id = request.query_params["account_id"]
+        path = instance.get_all_parents_side(parent_id=account_id)
+        data = super(GenealogyAccountSerializer, self).to_representation(instance)
+        data.update(
+            {
+                "path": path,
+            }
+        )
+
+        return data
 
     class Meta:
         model = Account
@@ -351,7 +362,6 @@ class GenealogyAccountSerializer(ModelSerializer):
             "children",
             "all_left_children_count",
             "all_right_children_count",
-            "path",
         ]
 
 

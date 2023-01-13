@@ -322,7 +322,7 @@ class CreateAccountView(views.APIView):
             serializer = AccountSerializer(data=processed_request)
             if serializer.is_valid():
                 new_member = serializer.save()
-                is_valid = comp_plan(request, new_member, package, code, True)
+                is_valid = comp_plan(request, new_member, package, code)
                 if is_valid:
                     activate_account(new_member)
                     code.update_status(Account)
@@ -508,7 +508,7 @@ class UpgradeAccountView(views.APIView):
         serializer = AccountSerializer(account, data=data, partial=True)
         if serializer.is_valid():
             upgraded_member = serializer.save()
-            is_valid = comp_plan(request, upgraded_member, package, activation_code, False)
+            is_valid = comp_plan(request, upgraded_member, package, activation_code)
             if is_valid:
                 activation_code.update_status(Account)
                 return Response(data={"message": "Account upgraded."}, status=status.HTTP_200_OK)

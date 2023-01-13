@@ -95,6 +95,7 @@ def get_wallet_cashout_schedule():
     for wallet in [
         WalletType.B_WALLET,
         WalletType.F_WALLET,
+        WalletType.GC_WALLET,
     ]:
         property = "%s%s" % (wallet, "_CASHOUT_DAY")
         if property:
@@ -105,7 +106,7 @@ def get_wallet_cashout_schedule():
 
 
 def get_wallet_can_cashout(wallet):
-    if wallet == WalletType.F_WALLET or wallet == WalletType.B_WALLET:
+    if wallet == WalletType.F_WALLET or wallet == WalletType.B_WALLET or wallet == WalletType.GC_WALLET:
         property = "%s%s" % (wallet, "_CASHOUT_DAY")
         if property:
             day = int(get_setting(property=property))
@@ -149,6 +150,12 @@ def compute_cashout_total(request):
         return data, "Valid"
 
     return data, "Unable to retrieve Total Cashout Amount"
+
+
+def compute_minimum_cashout_amount(amount):
+    minimum_cashout_amount = get_setting(Settings.MINIMUM_CASHOUT_AMOUNT)
+
+    return amount >= minimum_cashout_amount, minimum_cashout_amount
 
 
 def process_create_franchisee_request(request):
@@ -478,14 +485,14 @@ def create_downline_entry_activity(request, parent=None, child=None, child_side=
             )
 
 
-def create_sales_match_activity(request, parent=None, sales_match_amount=None):
+def create_sales_match_activity(request, parent=None, sales_match_amount_pv=None):
     content_type = ContentType.objects.get(model="activity")
-    point_value_conversion = get_setting(Settings.POINT_VALUE_CONVERSION)
+    pv_conversion = get_setting(Settings.POINT_VALUE_CONVERSION)
 
     pv_sales_match = create_activity(
         account=parent,
         activity_type=ActivityType.PV_SALES_MATCH,
-        activity_amount=sales_match_amount,
+        activity_amount=sales_match_amount_pv,
         status=ActivityStatus.DONE,
         wallet=WalletType.PV_TOTAL_WALLET,
         user=request.user,
@@ -495,7 +502,7 @@ def create_sales_match_activity(request, parent=None, sales_match_amount=None):
         create_activity(
             account=parent,
             activity_type=ActivityType.PV_SALES_MATCH,
-            activity_amount=-abs(sales_match_amount),
+            activity_amount=-abs(sales_match_amount_pv),
             status=ActivityStatus.DONE,
             wallet=WalletType.PV_LEFT_WALLET,
             content_type=content_type,
@@ -505,7 +512,7 @@ def create_sales_match_activity(request, parent=None, sales_match_amount=None):
         create_activity(
             account=parent,
             activity_type=ActivityType.PV_SALES_MATCH,
-            activity_amount=-abs(sales_match_amount),
+            activity_amount=-abs(sales_match_amount_pv),
             status=ActivityStatus.DONE,
             wallet=WalletType.PV_RIGHT_WALLET,
             content_type=content_type,
@@ -513,23 +520,26 @@ def create_sales_match_activity(request, parent=None, sales_match_amount=None):
             user=request.user,
         )
 
-        sales_match = create_activity(
-            account=parent,
-            activity_type=ActivityType.SALES_MATCH,
-            activity_amount=sales_match_amount * point_value_conversion,
-            status=ActivityStatus.DONE,
-            wallet=WalletType.B_WALLET,
-            content_type=content_type,
-            object_id=pv_sales_match.pk,
-            user=request.user,
-        )
+        fifth_pair_amount = create_fifth_pairing(request, parent, pv_sales_match.pk)
 
-        if sales_match:
-            create_leadership_bonus_activity(request, sales_match_amount, parent, pv_sales_match.pk)
+        if ((sales_match_amount_pv * pv_conversion) - fifth_pair_amount) > 0:
+            sales_match = create_activity(
+                account=parent,
+                activity_type=ActivityType.SALES_MATCH,
+                activity_amount=(sales_match_amount_pv * pv_conversion) - fifth_pair_amount,
+                status=ActivityStatus.DONE,
+                wallet=WalletType.B_WALLET,
+                content_type=content_type,
+                object_id=pv_sales_match.pk,
+                user=request.user,
+            )
+
+        # if sales_match:
+        create_leadership_bonus_activity(request, sales_match_amount_pv, parent, pv_sales_match.pk)
 
 
-def create_leadership_bonus_activity(request, sales_match_amount=None, account=None, pv_sales_match_pk=None):
-    point_value_conversion = get_setting(Settings.POINT_VALUE_CONVERSION)
+def create_leadership_bonus_activity(request, sales_match_amount_pv=None, account=None, pv_sales_match_pk=None):
+    pv_conversion = get_setting(Settings.POINT_VALUE_CONVERSION)
     two_level_referrers = account.get_two_level_referrer()
     content_type = ContentType.objects.get(model="activity")
 
@@ -541,13 +551,63 @@ def create_leadership_bonus_activity(request, sales_match_amount=None, account=N
             create_activity(
                 account=referrer["account"],
                 activity_type=ActivityType.LEADERSHIP_BONUS,
-                activity_amount=(sales_match_amount * leadership_bonus_pv_percentage) * point_value_conversion,
+                activity_amount=(sales_match_amount_pv * leadership_bonus_pv_percentage) * pv_conversion,
                 status=ActivityStatus.DONE,
                 wallet=WalletType.B_WALLET,
                 content_type=content_type,
                 object_id=pv_sales_match_pk,
                 user=request.user,
             )
+
+
+def create_fifth_pairing(request, account=None, pv_sales_match_pk=None):
+    fifth_pair_percentage = get_setting(Settings.FIFTH_PAIR_PERCENTAGE) / 100
+    pv_conversion = get_setting(Settings.POINT_VALUE_CONVERSION)
+    content_type = ContentType.objects.get(model="activity")
+
+    total_fifth_pair_amount = (
+        Activity.objects.filter(account=account, wallet=WalletType.GC_WALLET)
+        .values("activity_type")
+        .annotate(
+            activity_total=Case(
+                When(
+                    Q(activity_type=ActivityType.FIFTH_PAIR),
+                    then=Sum(F("activity_amount")),
+                ),
+            )
+        )
+        .aggregate(total=Coalesce(Sum("activity_total"), 0, output_field=DecimalField()))
+        .get("total")
+    )
+
+    pv_total_wallet = (
+        Activity.objects.filter(account=account, wallet=WalletType.PV_TOTAL_WALLET)
+        .values("activity_type")
+        .annotate(
+            activity_total=Sum(F("activity_amount")),
+        )
+        .aggregate(total=Coalesce(Sum("activity_total"), 0, output_field=DecimalField()))
+        .get("total")
+    )
+
+    remaining_fifth_pair_amount = pv_total_wallet - (total_fifth_pair_amount / fifth_pair_percentage)
+    fifth_pair_pv_amount = (remaining_fifth_pair_amount - (remaining_fifth_pair_amount % 100)) * fifth_pair_percentage
+
+    if fifth_pair_pv_amount:
+        fifth_pair = create_activity(
+            account=account,
+            activity_type=ActivityType.FIFTH_PAIR,
+            activity_amount=fifth_pair_pv_amount * pv_conversion,
+            status=ActivityStatus.DONE,
+            wallet=WalletType.GC_WALLET,
+            content_type=content_type,
+            object_id=pv_sales_match_pk,
+            user=request.user,
+        )
+
+        return fifth_pair.activity_amount
+
+    return 0
 
 
 def create_flushout_activity(
@@ -668,9 +728,9 @@ def get_pv_wallets_info(parent=None, child_side=None):
                 return left_wallet_total, right_wallet_total, WalletType.PV_LEFT_WALLET
 
 
-def comp_plan(request, new_member, new_member_package, code, is_new_account):
+def comp_plan(request, new_member, new_member_package, code):
     entry_activity = create_entry_activity(request, new_member, new_member_package, code)
-    if new_member.referrer and entry_activity and is_new_account:
+    if new_member.referrer and entry_activity:
         referral_activity = create_referral_activity(request, new_member.referrer, new_member, new_member_package, code)
 
         if referral_activity is None:
@@ -698,14 +758,17 @@ def comp_plan(request, new_member, new_member_package, code, is_new_account):
         strong_side_wallet_total, weak_side_wallet_total, strong_side_wallet = get_pv_wallets_info(
             current_parent, parent["side"]
         )
-
         if strong_side_wallet_total > 0 and weak_side_wallet_total > 0:
-            sales_match_amount = new_member_package.point_value
+            if strong_side_wallet_total > weak_side_wallet_total:
+                sales_match_amount_pv = weak_side_wallet_total
+            else:
+                sales_match_amount_pv = new_member_package.point_value
+
             total_sales_match_points_today = find_total_sales_match_points_today(current_parent)
             remaining_sales_match_points_today = current_parent_package.flush_out_limit - total_sales_match_points_today
 
-            if remaining_sales_match_points_today - sales_match_amount >= 0:
-                create_sales_match_activity(request, current_parent, sales_match_amount)
+            if remaining_sales_match_points_today - sales_match_amount_pv >= 0:
+                create_sales_match_activity(request, current_parent, sales_match_amount_pv)
             else:
                 if remaining_sales_match_points_today > 0:
                     create_sales_match_activity(request, current_parent, remaining_sales_match_points_today)

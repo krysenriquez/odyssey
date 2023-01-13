@@ -238,12 +238,16 @@ class Activity(models.Model):
                     detail = "Received from Cashout %s" % (str(generic_object.pk).zfill(5))
                 case ActivityType.DIRECT_REFERRAL:
                     detail = "Direct Referral on %s" % (str(generic_object.pk).zfill(5))
-                case ActivityType.FRANCHISE_COMMISSION:
-                    detail = "Franchise Commission on %s" % (str(generic_object.pk).zfill(5))
-                case ActivityType.DOWNLINE_ENTRY:
-                    detail = "Downline Entry on %s" % (str(generic_object.pk).zfill(5))
                 case ActivityType.SALES_MATCH:
                     detail = "Sales Match"
+                case ActivityType.LEADERSHIP_BONUS:
+                    detail = "Leadership Bonus"
+                case ActivityType.FRANCHISE_COMMISSION:
+                    detail = "Franchise Commission on %s" % (str(generic_object.pk).zfill(5))
+                case ActivityType.FIFTH_PAIR:
+                    detail = "Reached Fifth Pairing"
+                case ActivityType.DOWNLINE_ENTRY:
+                    detail = "Downline Entry on %s" % (str(generic_object.pk).zfill(5))
                 case ActivityType.CASHOUT:
                     detail = "Cashout"
         else:

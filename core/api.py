@@ -12,6 +12,7 @@ from core.services import (
     create_company_earning_activity,
     get_all_enums,
     get_cashout_total_tax,
+    compute_minimum_cashout_amount,
     get_setting,
     get_wallet_can_cashout,
     get_wallet_cashout_schedule,
@@ -509,7 +510,7 @@ class SummaryActivityAmountAdminView(views.APIView):
 
     def post(self, request, *args, **kwargs):
         data = []
-        ActivityFilter = [ActivityType.DOWNLINE_ENTRY, ActivityType.GLOBAL_POOL_BONUS]
+        ActivityFilter = [ActivityType.DOWNLINE_ENTRY, ActivityType.GLOBAL_POOL_BONUS, ActivityType.PV_SALES_MATCH]
         for activity in ActivityType:
             if activity not in ActivityFilter:
                 activities = (
@@ -916,9 +917,15 @@ class WalletMaxAmountView(views.APIView):
                 total=Coalesce(Sum("activity_total"), 0, output_field=DecimalField())
             ).get("total")
             if wallet_total - int(amount) >= 0:
+                can_cashout, minimum_cashout_amount = compute_minimum_cashout_amount(amount)
+                if can_cashout:
+                    return Response(
+                        data={"message": "Cashout Available"},
+                        status=status.HTTP_200_OK,
+                    )
                 return Response(
-                    data={"message": "Cashout Available"},
-                    status=status.HTTP_200_OK,
+                    data={"message": "Minimum amount of ₱" + str(minimum_cashout_amount)},
+                    status=status.HTTP_403_FORBIDDEN,
                 )
             else:
                 return Response(
@@ -1101,7 +1108,7 @@ class CreateFranchiseeView(views.APIView):
         serializer = CreateFranchiseeSerializer(data=processed_request)
         if serializer.is_valid():
             new_franchisee = serializer.save()
-            is_valid = comp_plan(request, new_franchisee, package, code, True)
+            is_valid = comp_plan(request, new_franchisee, package, code)
             if is_valid:
                 code.update_status(Franchisee)
                 return Response(data={"message": "Franchisee created."}, status=status.HTTP_201_CREATED)

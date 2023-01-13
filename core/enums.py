@@ -33,8 +33,12 @@ class Settings(models.TextChoices):
     B_WALLET_CASHOUT_OVERRIDE = "B_WALLET_CASHOUT_OVERRIDE", _("Binary Wallet Cashout Override")
     F_WALLET_CASHOUT_DAY = "F_WALLET_CASHOUT_DAY", _("Franchise Wallet Cashout Day")
     F_WALLET_CASHOUT_OVERRIDE = "F_WALLET_CASHOUT_OVERRIDE", _("Franchise Wallet Cashout Override")
+    GC_WALLET_CASHOUT_DAY = "GC_WALLET_CASHOUT_DAY", _("Gift Certificate Wallet Cashout Day")
+    GC_WALLET_CASHOUT_OVERRIDE = "GC_WALLET_CASHOUT_OVERRIDE", _("Gift Certificate Wallet Cashout Override")
+    MINIMUM_CASHOUT_AMOUNT = "MINIMUM_CASHOUT_AMOUNT", _("Minimum Cashout Amount")
     MAX_USER_ACCOUNT_LIMIT = "MAX_USER_ACCOUNT_LIMIT", _("Max User Account Limit")
     CODE_LENGTH = "CODE_LENGTH", _("Code Length")
+    FIFTH_PAIR_PERCENTAGE = "FIFTH_PAIR_PERCENTAGE", _("Fifth Pair Percentage")
 
 
 # Core Activities
@@ -49,14 +53,16 @@ class ActivityType(models.TextChoices):
     SALES_MATCH = "SALES_MATCH", _("Sales Match")
     REFERRAL_BONUS = "REFERRAL_BONUS", _("Referral Bonus")
     GLOBAL_POOL_BONUS = "GLOBAL_POOL_BONUS", _("Global Pool Bonus")
+    LEADERSHIP_BONUS = "LEADERSHIP_BONUS", _("Leadership Bonus")
     # * --- F Wallet
     FRANCHISE_COMMISSION = "FRANCHISE_COMMISSION", _("Franchise Commission")  # * Foreign Key to Sponsored Account
-    # * --- B and F Wallet
+    # * --- GC Wallet
+    FIFTH_PAIR = "FIFTH_PAIR", ("Fifth Pair")
+    # * --- B, F and GC Wallet
     CASHOUT = "CASHOUT", _("Cashout")  # * Foreign Key to Cashout
     # * --- PV Left and Right Wallet
     DOWNLINE_ENTRY = "DOWNLINE_ENTRY", _("Downline Entry")
     PV_SALES_MATCH = "PV_SALES_MATCH", _("Point Value Sales Match")
-    LEADERSHIP_BONUS = "LEADERSHIP_BONUS", _("Leadership Bonus")
     FLUSH_OUT_PENALTY = "FLUSH_OUT_PENALTY", _("Flush Out Penalty")
 
 
@@ -72,6 +78,7 @@ class WalletType(models.TextChoices):
     C_WALLET = "C_WALLET", _("Company Wallet")
     B_WALLET = "B_WALLET", _("Binary Wallet")
     F_WALLET = "F_WALLET", _("Franchise Wallet")
+    GC_WALLET = "GC_WALLET", _("Gift Certificate Wallet")
     # Sub Wallets for Pairing
     PV_LEFT_WALLET = "PV_LEFT_WALLET", _("Point Value Left Wallet")
     PV_RIGHT_WALLET = "PV_RIGHT_WALLET", _("Point Value Right Wallet")
@@ -84,3 +91,5 @@ class CashoutMethod(models.TextChoices):
     PALAWAN_EXPRESS = "Palawan Express", _("Palawan Express")
     UNION_BANK = "Union Bank", _("Union Bank")
     BDO = "BDO", _("BDO")
+    CHECQUE = "Checque", _("Checque")
+    OTHERS = 'Other/s', _("Other/s")
