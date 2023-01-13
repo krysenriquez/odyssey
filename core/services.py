@@ -534,8 +534,8 @@ def create_sales_match_activity(request, parent=None, sales_match_amount_pv=None
                 user=request.user,
             )
 
-        # if sales_match:
-        create_leadership_bonus_activity(request, sales_match_amount_pv, parent, pv_sales_match.pk)
+            if sales_match:
+                create_leadership_bonus_activity(request, sales_match_amount_pv, parent, pv_sales_match.pk)
 
 
 def create_leadership_bonus_activity(request, sales_match_amount_pv=None, account=None, pv_sales_match_pk=None):
