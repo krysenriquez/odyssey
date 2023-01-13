@@ -1,6 +1,7 @@
 from rest_framework import status, views, permissions
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 from django.db.models import Sum, F, Q, Case, When, DecimalField
 from django.db.models.functions import Coalesce
 from accounts.models import Account
@@ -10,6 +11,7 @@ from core.services import (
     comp_plan,
     compute_cashout_total,
     create_company_earning_activity,
+    find_total_sales_match_points_today,
     get_all_enums,
     get_cashout_total_tax,
     compute_minimum_cashout_amount,
@@ -344,6 +346,7 @@ class GenerateCodeView(views.APIView):
         if quantity:
             for i in range(int(quantity)):
                 request.data["created_by"] = request.user.pk
+                request.data["status"] = CodeStatus.ACTIVE
                 serializer = GenerateCodeSerializer(data=request.data)
 
                 if serializer.is_valid():
@@ -431,6 +434,29 @@ class SummaryMemberFranchiseeAdminView(views.APIView):
 
         franchisees = Franchisee.objects.count()
         data.append({"model": "Franchisees", "summary": franchisees})
+        return Response(
+            data=data,
+            status=status.HTTP_200_OK,
+        )
+
+
+class SummaryActivityStatsMemberView(views.APIView):
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
+
+    def post(self, request, *args, **kwargs):
+        account_id = request.data.get("account_id")
+        data = []
+        account = get_object_or_404(Account, account_id=account_id)
+        total_sales_match_points_today = find_total_sales_match_points_today(account)
+        remaining_sales_match_points_today = account.package.flush_out_limit - total_sales_match_points_today
+
+        data.append(
+            {
+                "flushout_limit": account.package.flush_out_limit,
+                "remaining_sales_match_points_today": remaining_sales_match_points_today,
+            }
+        )
+
         return Response(
             data=data,
             status=status.HTTP_200_OK,
@@ -550,6 +576,7 @@ class SummaryActivityAmountMemberView(views.APIView):
             ActivityType.FRANCHISE_ENTRY,
             ActivityType.COMPANY_TAX,
             ActivityType.DOWNLINE_ENTRY,
+            ActivityType.FLUSH_OUT_PENALTY,
         ]
         for activity in ActivityType:
             if activity not in ActivityFilter:
@@ -762,6 +789,12 @@ class SummaryPVWalletMemberView(views.APIView):
                             then=Sum(F("activity_amount")),
                         ),
                     ),
+                    flushout_total=Case(
+                        When(
+                            Q(activity_type=ActivityType.FLUSH_OUT_PENALTY),
+                            then=Sum(F("activity_amount")),
+                        ),
+                    ),
                     activity_total=Sum(F("activity_amount")),
                 )
                 .order_by("-activity_total")
@@ -773,12 +806,17 @@ class SummaryPVWalletMemberView(views.APIView):
                 total=Coalesce(Sum("running_total"), 0, output_field=DecimalField())
             ).get("total")
 
+            wallet_flushout_total = activities.aggregate(
+                total=Coalesce(Sum("flushout_total"), 0, output_field=DecimalField())
+            ).get("total")
+
             data.append(
                 {
                     "wallet": wallet,
                     "wallet_display": wallet + "_SUMMARY",
                     "total": wallet_total,
                     "running_total": wallet_running_total,
+                    "flushout_total": wallet_flushout_total,
                 }
             )
 
@@ -917,7 +955,7 @@ class WalletMaxAmountView(views.APIView):
                 total=Coalesce(Sum("activity_total"), 0, output_field=DecimalField())
             ).get("total")
             if wallet_total - int(amount) >= 0:
-                can_cashout, minimum_cashout_amount = compute_minimum_cashout_amount(amount)
+                can_cashout, minimum_cashout_amount = compute_minimum_cashout_amount(amount, wallet)
                 if can_cashout:
                     return Response(
                         data={"message": "Cashout Available"},

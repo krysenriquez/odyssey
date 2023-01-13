@@ -336,7 +336,8 @@ class GenealogyAccountSerializer(ModelSerializer):
     def to_representation(self, instance):
         request = self.context["request"]
         account_id = request.query_params["account_id"]
-        path = instance.get_all_parents_side(parent_id=account_id)
+        account = request.user.account_user.all().first()
+        path = instance.get_all_parents_side(parent_id=account.account_id)
         data = super(GenealogyAccountSerializer, self).to_representation(instance)
         data.update(
             {

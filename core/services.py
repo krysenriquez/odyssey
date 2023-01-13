@@ -152,10 +152,14 @@ def compute_cashout_total(request):
     return data, "Unable to retrieve Total Cashout Amount"
 
 
-def compute_minimum_cashout_amount(amount):
-    minimum_cashout_amount = get_setting(Settings.MINIMUM_CASHOUT_AMOUNT)
-
-    return amount >= minimum_cashout_amount, minimum_cashout_amount
+def compute_minimum_cashout_amount(amount, wallet):
+    if wallet == WalletType.F_WALLET or wallet == WalletType.B_WALLET or wallet == WalletType.GC_WALLET:
+        property = "%s%s" % (wallet, "_MINIMUM_CASHOUT_AMOUNT")
+        print(property)
+        if property:
+            minimum_cashout_amount = int(get_setting(property=property))
+            return amount >= minimum_cashout_amount, minimum_cashout_amount
+    return False, 0
 
 
 def process_create_franchisee_request(request):
@@ -615,16 +619,11 @@ def create_fifth_pairing(request, account=None, pv_sales_match_pk=None):
     return 0
 
 
-def create_flushout_activity(
-    request,
-    parent=None,
-    strong_side_wallet_total=None,
-    weak_side_wallet_total=None,
-    strong_side_wallet=None,
-):
-    content_type = ContentType.objects.get(model="activity")
+def create_flushout_activity(request, parent=None, child_side=None):
     penalty_weak = get_setting(Settings.FLUSH_OUT_PENALTY_PERCENTAGE_WEAK) / 100
     penalty_strong = get_setting(Settings.FLUSH_OUT_PENALTY_PERCENTAGE_STRONG) / 100
+
+    strong_side_wallet_total, weak_side_wallet_total, strong_side_wallet = get_pv_wallets_info(parent, child_side)
 
     match strong_side_wallet:
         case WalletType.PV_LEFT_WALLET:
@@ -632,6 +631,7 @@ def create_flushout_activity(
                 account=parent,
                 activity_type=ActivityType.FLUSH_OUT_PENALTY,
                 activity_amount=-abs(strong_side_wallet_total * penalty_strong),
+                status=ActivityStatus.DONE,
                 wallet=WalletType.PV_LEFT_WALLET,
                 user=request.user,
             )
@@ -639,6 +639,7 @@ def create_flushout_activity(
                 account=parent,
                 activity_type=ActivityType.FLUSH_OUT_PENALTY,
                 activity_amount=-abs(weak_side_wallet_total * penalty_weak),
+                status=ActivityStatus.DONE,
                 wallet=WalletType.PV_RIGHT_WALLET,
                 user=request.user,
             )
@@ -647,6 +648,7 @@ def create_flushout_activity(
                 account=parent,
                 activity_type=ActivityType.FLUSH_OUT_PENALTY,
                 activity_amount=-abs(weak_side_wallet_total * penalty_weak),
+                status=ActivityStatus.DONE,
                 wallet=WalletType.PV_LEFT_WALLET,
                 user=request.user,
             )
@@ -654,6 +656,7 @@ def create_flushout_activity(
                 account=parent,
                 activity_type=ActivityType.FLUSH_OUT_PENALTY,
                 activity_amount=-abs(strong_side_wallet_total * penalty_strong),
+                status=ActivityStatus.DONE,
                 wallet=WalletType.PV_RIGHT_WALLET,
                 user=request.user,
             )
@@ -753,6 +756,68 @@ def comp_plan(request, new_member, new_member_package, code):
         current_level = parent["level"]
         current_parent_package = get_package_details(parent["package"])
 
+        # Possible that if account is already on flushout, will no longer create downline_entry_activity
+        # Will still create flushout activity?
+
+        #  ---------- Logic for negating all entries if flushout ----------
+        # strong_side_wallet_total, weak_side_wallet_total, strong_side_wallet = get_pv_wallets_info(
+        #     current_parent, parent["side"]
+        # )
+        # total_sales_match_points_today = find_total_sales_match_points_today(current_parent)
+        # remaining_sales_match_points_today = current_parent_package.flush_out_limit - total_sales_match_points_today
+
+        # if remaining_sales_match_points_today > 0:
+        #     downline_entry_activity = create_downline_entry_activity(
+        #         request, current_parent, new_member, parent["side"], new_member_package
+        #     )
+
+        #     if downline_entry_activity is None:
+        #         continue
+
+        #     if strong_side_wallet_total > 0 and weak_side_wallet_total > 0:
+        #         if strong_side_wallet_total > weak_side_wallet_total:
+        #             sales_match_amount_pv = weak_side_wallet_total
+        #         else:
+        #             sales_match_amount_pv = new_member_package.point_value
+
+        #         if remaining_sales_match_points_today - sales_match_amount_pv >= 0:
+        #             create_sales_match_activity(request, current_parent, sales_match_amount_pv)
+        #         else:
+        #             if remaining_sales_match_points_today > 0:
+        #                 create_sales_match_activity(request, current_parent, remaining_sales_match_points_today)
+        #                 create_flushout_activity(request, current_parent, parent["side"])
+        #             else:
+        #                 create_flushout_activity(request, current_parent, parent["side"])
+
+        #  ---------- Logic for negating downline entries if flushout but will still create flushout activity ----------
+        # strong_side_wallet_total, weak_side_wallet_total, strong_side_wallet = get_pv_wallets_info(
+        #     current_parent, parent["side"]
+        # )
+        # total_sales_match_points_today = find_total_sales_match_points_today(current_parent)
+        # remaining_sales_match_points_today = current_parent_package.flush_out_limit - total_sales_match_points_today
+
+        # if remaining_sales_match_points_today > 0:
+        #     downline_entry_activity = create_downline_entry_activity(
+        #         request, current_parent, new_member, parent["side"], new_member_package
+        #     )
+
+        #     if downline_entry_activity is None:
+        #         continue
+
+        #     if strong_side_wallet_total > 0 and weak_side_wallet_total > 0:
+        #         if strong_side_wallet_total > weak_side_wallet_total:
+        #             sales_match_amount_pv = weak_side_wallet_total
+        #         else:
+        #             sales_match_amount_pv = new_member_package.point_value
+
+        #         if remaining_sales_match_points_today - sales_match_amount_pv >= 0:
+        #             create_sales_match_activity(request, current_parent, sales_match_amount_pv)
+        #         else:
+        #             create_sales_match_activity(request, current_parent, remaining_sales_match_points_today)
+        #             create_flushout_activity(request, current_parent, parent["side"])
+        # else:
+        #     create_flushout_activity(request, current_parent, parent["side"])
+
         downline_entry_activity = create_downline_entry_activity(
             request, current_parent, new_member, parent["side"], new_member_package
         )
@@ -771,26 +836,13 @@ def comp_plan(request, new_member, new_member_package, code):
 
             total_sales_match_points_today = find_total_sales_match_points_today(current_parent)
             remaining_sales_match_points_today = current_parent_package.flush_out_limit - total_sales_match_points_today
-
             if remaining_sales_match_points_today - sales_match_amount_pv >= 0:
                 create_sales_match_activity(request, current_parent, sales_match_amount_pv)
             else:
                 if remaining_sales_match_points_today > 0:
                     create_sales_match_activity(request, current_parent, remaining_sales_match_points_today)
-                    create_flushout_activity(
-                        request,
-                        current_parent,
-                        strong_side_wallet_total - remaining_sales_match_points_today,
-                        weak_side_wallet_total - remaining_sales_match_points_today,
-                        strong_side_wallet,
-                    )
+                    create_flushout_activity(request, current_parent, parent["side"])
                 else:
-                    create_flushout_activity(
-                        request,
-                        current_parent,
-                        strong_side_wallet_total,
-                        weak_side_wallet_total,
-                        strong_side_wallet,
-                    )
+                    create_flushout_activity(request, current_parent, parent["side"])
     else:
         return True

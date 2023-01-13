@@ -15,6 +15,7 @@ from core.api import (
     ActivitiesMemberWalletViewSet,
     CashoutAdminListViewSet,
     CashoutAdminInfoViewSet,
+    SummaryActivityStatsMemberView,
     UpdateCashoutStatusView,
     CashoutMemberInfoViewSet,
     CashoutMemberListViewSet,
@@ -77,6 +78,7 @@ urlpatterns = [
     path("getallpvwalletsummary/", SummaryPVWalletAdminView.as_view()),
     path("updatecashoutstatus/", UpdateCashoutStatusView.as_view()),
     # Member
+    path("getactivitystats/", SummaryActivityStatsMemberView.as_view()),
     path("getactivitysummaryinfo/", SummaryMemberView.as_view()),
     path("getactivitytotalamount/", SummaryActivityAmountMemberView.as_view()),
     path("getwalletsummary/", SummaryWalletMemberView.as_view()),

@@ -133,7 +133,7 @@ class Account(models.Model):
     def get_all_parents_side(self, sides=None, level=None, parent_id=None):
         if sides is None:
             sides = []
-        if self.parent and str(self.account_id) != parent_id:
+        if self.parent and self.account_id != parent_id:
             sides.append(self.parent_side)
             self.parent.get_all_parents_side(sides, level, parent_id)
         return sides
