@@ -36,9 +36,6 @@ if LIVE:
         "http://member.topchoiceinternational.com",
         "http://admin.topchoiceinternational.com",
         "http://odyssey.topchoiceinternational.com",
-        "member.topchoiceinternational.com",
-        "admin.topchoiceinternational.com",
-        "odyssey.topchoiceinternational.com",
     ]
     CSRF_TRUSTED_ORIGINS = [
         "https://member.topchoiceinternational.com",
@@ -47,10 +44,6 @@ if LIVE:
         "http://member.topchoiceinternational.com",
         "http://admin.topchoiceinternational.com",
         "http://odyssey.topchoiceinternational.com",
-        "member.topchoiceinternational.com",
-        "admin.topchoiceinternational.com",
-        "odyssey.topchoiceinternational.com",
-        gi,
     ]
 else:
     CORS_ALLOWED_ORIGINS = [
