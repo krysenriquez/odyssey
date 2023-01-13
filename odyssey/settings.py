@@ -7,13 +7,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-2tj+!nv*4b7yy!i+#%m24cqv=4+nzwsaxh-dcw&k31po9exolv"
 
 DEBUG = True
-LIVE = False
+LIVE = True
 
 if DEBUG and not LIVE:
     ALLOWED_HOSTS = ["*"]
 
 if LIVE:
-    ALLOWED_HOSTS = ["https://member.topchoiceinternational.com", "https://admin.topchoiceinternational.com"]
+    ALLOWED_HOSTS = [
+        "https://member.topchoiceinternational.com",
+        "https://admin.topchoiceinternational.com",
+        "https://odyssey.topchoiceinternational.com",
+        "http://member.topchoiceinternational.com",
+        "http://admin.topchoiceinternational.com",
+        "http://odyssey.topchoiceinternational.com",
+    ]
 
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ALLOW_CREDENTIALS = True
@@ -22,10 +29,18 @@ if LIVE:
     CORS_ALLOWED_ORIGINS = [
         "https://member.topchoiceinternational.com",
         "https://admin.topchoiceinternational.com",
+        "https://odyssey.topchoiceinternational.com",
+        "http://member.topchoiceinternational.com",
+        "http://admin.topchoiceinternational.com",
+        "http://odyssey.topchoiceinternational.com",
     ]
     CSRF_TRUSTED_ORIGINS = [
         "https://member.topchoiceinternational.com",
         "https://admin.topchoiceinternational.com",
+        "https://odyssey.topchoiceinternational.com",
+        "http://member.topchoiceinternational.com",
+        "http://admin.topchoiceinternational.com",
+        "http://odyssey.topchoiceinternational.com",
     ]
 else:
     CORS_ALLOWED_ORIGINS = [
