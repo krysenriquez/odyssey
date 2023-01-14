@@ -1,0 +1,354 @@
+[
+  {
+    "model": "core.setting",
+    "pk": 1,
+    "fields": {
+      "property": "CODE_EXPIRATION",
+      "value": "350.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 2,
+    "fields": {
+      "property": "POINT_VALUE_CONVERSION",
+      "value": "10.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 3,
+    "fields": {
+      "property": "FLUSH_OUT_PENALTY_PERCENTAGE_WEAK",
+      "value": "100.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 4,
+    "fields": {
+      "property": "FLUSH_OUT_PENALTY_PERCENTAGE_STRONG",
+      "value": "50.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 5,
+    "fields": {
+      "property": "DIRECT_REFERRAL_PERCENTAGE",
+      "value": "10.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 6,
+    "fields": {
+      "property": "REFERRAL_BONUS_COUNT",
+      "value": "2.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 7,
+    "fields": {
+      "property": "FRANCHISE_COMMISSION_PERCENTAGE",
+      "value": "10.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 8,
+    "fields": {
+      "property": "GLOBAL_POOL_BONUS_PERCENTAGE",
+      "value": "5.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 9,
+    "fields": {
+      "property": "GLOBAL_POOL_BONUS_REQUIREMENT",
+      "value": "1500.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 10,
+    "fields": {
+      "property": "COMPANY_CASHOUT_FEE_PERCENTAGE",
+      "value": "10.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 11,
+    "fields": {
+      "property": "B_WALLET_CASHOUT_DAY",
+      "value": "2.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 12,
+    "fields": {
+      "property": "B_WALLET_CASHOUT_OVERRIDE",
+      "value": "0.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 13,
+    "fields": {
+      "property": "F_WALLET_CASHOUT_DAY",
+      "value": "1.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 14,
+    "fields": {
+      "property": "F_WALLET_CASHOUT_OVERRIDE",
+      "value": "0.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 15,
+    "fields": {
+      "property": "MAX_USER_ACCOUNT_LIMIT",
+      "value": "1.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 16,
+    "fields": {
+      "property": "CODE_LENGTH",
+      "value": "15.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 17,
+    "fields": {
+      "property": "FIFTH_PAIR_PERCENTAGE",
+      "value": "20.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 18,
+    "fields": {
+      "property": "GC_WALLET_CASHOUT_DAY",
+      "value": "1.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 19,
+    "fields": {
+      "property": "GC_WALLET_CASHOUT_OVERRIDE",
+      "value": "0.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 20,
+    "fields": {
+      "property": "B_WALLET_MINIMUM_CASHOUT_AMOUNT",
+      "value": "500.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 21,
+    "fields": {
+      "property": "F_WALLET_MINIMUM_CASHOUT_AMOUNT",
+      "value": "500.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 22,
+    "fields": {
+      "property": "GC_WALLET_MINIMUM_CASHOUT_AMOUNT",
+      "value": "1000.00"
+    }
+  },
+  {
+    "model": "core.package",
+    "pk": 1,
+    "fields": {
+      "package_name": "Starter",
+      "package_amount": "1599.00",
+      "has_pairing": true,
+      "point_value": "20.00",
+      "flush_out_limit": "250.00",
+      "is_franchise": false,
+      "is_bco": false,
+      "created_by": 1
+    }
+  },
+  {
+    "model": "core.package",
+    "pk": 2,
+    "fields": {
+      "package_name": "Silver",
+      "package_amount": "5999.00",
+      "has_pairing": true,
+      "point_value": "70.00",
+      "flush_out_limit": "1000.00",
+      "is_franchise": false,
+      "is_bco": false,
+      "created_by": 1
+    }
+  },
+  {
+    "model": "core.package",
+    "pk": 3,
+    "fields": {
+      "package_name": "Gold",
+      "package_amount": "34999.00",
+      "has_pairing": true,
+      "point_value": "500.00",
+      "flush_out_limit": "4000.00",
+      "is_franchise": false,
+      "is_bco": false,
+      "created_by": 1
+    }
+  },
+  {
+    "model": "core.package",
+    "pk": 4,
+    "fields": {
+      "package_name": "Pizza Foodcart 34,999",
+      "package_amount": "34999.00",
+      "has_pairing": false,
+      "point_value": "0.00",
+      "flush_out_limit": "0.00",
+      "is_franchise": true,
+      "is_bco": false,
+      "created_by": 1
+    }
+  },
+  {
+    "model": "core.package",
+    "pk": 5,
+    "fields": {
+      "package_name": "Franchise 134,999",
+      "package_amount": "134999.00",
+      "has_pairing": true,
+      "point_value": "0.00",
+      "flush_out_limit": "0.00",
+      "is_franchise": false,
+      "is_bco": false,
+      "created_by": null
+    }
+  },
+  {
+    "model": "core.referralbonus",
+    "pk": 1,
+    "fields": {
+      "package_referrer": 3,
+      "package_referred": 3,
+      "point_value": "600.00",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "core.referralbonus",
+    "pk": 2,
+    "fields": {
+      "package_referrer": 3,
+      "package_referred": 2,
+      "point_value": "100.00",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "core.referralbonus",
+    "pk": 3,
+    "fields": {
+      "package_referrer": 2,
+      "package_referred": 3,
+      "point_value": "300.00",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "core.referralbonus",
+    "pk": 4,
+    "fields": {
+      "package_referrer": 2,
+      "package_referred": 2,
+      "point_value": "100.00",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "core.leadershipbonus",
+    "pk": 1,
+    "fields": {
+      "package": 3,
+      "level": "1.00",
+      "point_value_percentage": "5.00",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "core.leadershipbonus",
+    "pk": 2,
+    "fields": {
+      "package": 3,
+      "level": "2.00",
+      "point_value_percentage": "3.00",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "core.leadershipbonus",
+    "pk": 3,
+    "fields": {
+      "package": 2,
+      "level": "1.00",
+      "point_value_percentage": "3.00",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "core.code",
+    "pk": 1,
+    "fields": {
+      "code": "123456789ABCDEF",
+      "package": 3,
+      "code_type": "ACTIVATION",
+      "status": "USED",
+      "owner": 1000001,
+      "created_by": 1,
+      "is_expiring": false,
+      "created": "2023-01-10T09:49:23.584Z",
+      "modified": "2023-01-13T15:26:56.632Z",
+      "deleted": null,
+      "is_deleted": false
+    }
+  },
+  {
+    "model": "core.activity",
+    "pk": 1,
+    "fields": {
+      "account": 1000001,
+      "activity_type": "ENTRY",
+      "activity_amount": "34999.00",
+      "status": "DONE",
+      "wallet": "C_WALLET",
+      "content_type": 11,
+      "object_id": 1000001,
+      "created_by": 1,
+      "created": "2023-01-10T09:50:29.036Z",
+      "modified": "2023-01-14T22:28:38.564Z",
+      "deleted": null,
+      "is_deleted": false,
+      "note": ""
+    }
+  }
+]

@@ -1,0 +1,372 @@
+[
+    {
+        "model": "users.user",
+        "pk": 1,
+        "fields": {
+            "password": "pbkdf2_sha256$390000$6IY8RZJwg61AopiR4tzfiz$T3NUqr+jIuJpzcdPEbT6uVit2UFYF0+hk2XI+GSq/js=",
+            "last_login": "2023-01-13T04:21:41.605Z",
+            "is_superuser": true,
+            "first_name": "",
+            "last_name": "",
+            "email": "",
+            "is_staff": true,
+            "date_joined": "2023-01-09T18:10:48.653Z",
+            "user_id": "d0ea99cc-4939-49d9-8c8d-6df583a03826",
+            "username": "tcideveloper",
+            "email_address": "tcideveloper@odyssey.com",
+            "user_type": "Developer",
+            "is_active": true,
+            "created": "2023-01-09T18:10:48.907Z",
+            "modified": "2023-01-09T18:10:48.907Z",
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "users.user",
+        "pk": 2,
+        "fields": {
+            "password": "pbkdf2_sha256$390000$w61uctePQENZizcxH369SC$14ibhbtaSUnHoYT8/iFinCsH/rvHv6b6bLLjs9/3WY0=",
+            "last_login": null,
+            "is_superuser": false,
+            "first_name": "",
+            "last_name": "",
+            "email": "",
+            "is_staff": false,
+            "date_joined": "2023-01-10T09:48:48.509Z",
+            "user_id": "cdd9d961-344b-421d-8340-4e287d69301b",
+            "username": "tc01",
+            "email_address": "tc01@topchoiceinternational.com",
+            "user_type": "Member",
+            "is_active": true,
+            "created": "2023-01-10T09:48:48.782Z",
+            "modified": "2023-01-10T22:37:15.051Z",
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "users.user",
+        "pk": 3,
+        "fields": {
+            "password": "pbkdf2_sha256$390000$bjqekHe7lDIrvXar9ksBbD$PlQm8GiaeeRpvcC+voBX3FeMG2cue85JcFcSu0VFVRk=",
+            "last_login": "2023-01-13T11:13:35.797Z",
+            "is_superuser": true,
+            "first_name": "",
+            "last_name": "",
+            "email": "",
+            "is_staff": true,
+            "date_joined": "2023-01-10T13:28:28.866Z",
+            "user_id": "55bc97d5-4b83-443b-87dd-748f8bc91bbd",
+            "username": "tciadmin",
+            "email_address": "tciadmin@topchoiceinternational.com",
+            "user_type": "Admin",
+            "is_active": true,
+            "created": "2023-01-10T13:28:29.141Z",
+            "modified": "2023-01-10T13:28:41.892Z",
+            "groups": [],
+            "user_permissions": []
+        }
+    },
+    {
+        "model": "users.permission",
+        "pk": 2,
+        "fields": {
+            "permission_name": "Member Management"
+        }
+    },
+    {
+        "model": "users.permission",
+        "pk": 3,
+        "fields": {
+            "permission_name": "Franchisee Management"
+        }
+    },
+    {
+        "model": "users.permission",
+        "pk": 4,
+        "fields": {
+            "permission_name": "Cashout Management"
+        }
+    },
+    {
+        "model": "users.permission",
+        "pk": 5,
+        "fields": {
+            "permission_name": "Activity Management"
+        }
+    },
+    {
+        "model": "users.permission",
+        "pk": 6,
+        "fields": {
+            "permission_name": "Package Management"
+        }
+    },
+    {
+        "model": "users.permission",
+        "pk": 7,
+        "fields": {
+            "permission_name": "Code Management"
+        }
+    },
+    {
+        "model": "users.permission",
+        "pk": 8,
+        "fields": {
+            "permission_name": "Settings Management"
+        }
+    },
+    {
+        "model": "users.rolepermissions",
+        "pk": 1,
+        "fields": {
+            "user_type": "Developer",
+            "permission": 2,
+            "can_create": true,
+            "can_retrieve": true,
+            "can_delete": true,
+            "can_update": true
+        }
+    },
+    {
+        "model": "users.rolepermissions",
+        "pk": 2,
+        "fields": {
+            "user_type": "Developer",
+            "permission": 4,
+            "can_create": true,
+            "can_retrieve": true,
+            "can_delete": true,
+            "can_update": true
+        }
+    },
+    {
+        "model": "users.rolepermissions",
+        "pk": 3,
+        "fields": {
+            "user_type": "Developer",
+            "permission": 5,
+            "can_create": true,
+            "can_retrieve": true,
+            "can_delete": true,
+            "can_update": true
+        }
+    },
+    {
+        "model": "users.rolepermissions",
+        "pk": 4,
+        "fields": {
+            "user_type": "Developer",
+            "permission": 6,
+            "can_create": true,
+            "can_retrieve": true,
+            "can_delete": true,
+            "can_update": true
+        }
+    },
+    {
+        "model": "users.rolepermissions",
+        "pk": 5,
+        "fields": {
+            "user_type": "Developer",
+            "permission": 3,
+            "can_create": true,
+            "can_retrieve": true,
+            "can_delete": true,
+            "can_update": true
+        }
+    },
+    {
+        "model": "users.rolepermissions",
+        "pk": 6,
+        "fields": {
+            "user_type": "Developer",
+            "permission": 7,
+            "can_create": true,
+            "can_retrieve": true,
+            "can_delete": true,
+            "can_update": true
+        }
+    },
+    {
+        "model": "users.rolepermissions",
+        "pk": 7,
+        "fields": {
+            "user_type": "Developer",
+            "permission": 8,
+            "can_create": true,
+            "can_retrieve": true,
+            "can_delete": true,
+            "can_update": true
+        }
+    },
+    {
+        "model": "users.rolepermissions",
+        "pk": 8,
+        "fields": {
+            "user_type": "Admin",
+            "permission": 2,
+            "can_create": true,
+            "can_retrieve": true,
+            "can_delete": true,
+            "can_update": true
+        }
+    },
+    {
+        "model": "users.rolepermissions",
+        "pk": 9,
+        "fields": {
+            "user_type": "Admin",
+            "permission": 4,
+            "can_create": true,
+            "can_retrieve": true,
+            "can_delete": true,
+            "can_update": true
+        }
+    },
+    {
+        "model": "users.rolepermissions",
+        "pk": 10,
+        "fields": {
+            "user_type": "Admin",
+            "permission": 5,
+            "can_create": true,
+            "can_retrieve": true,
+            "can_delete": true,
+            "can_update": true
+        }
+    },
+    {
+        "model": "users.rolepermissions",
+        "pk": 11,
+        "fields": {
+            "user_type": "Admin",
+            "permission": 6,
+            "can_create": true,
+            "can_retrieve": true,
+            "can_delete": true,
+            "can_update": true
+        }
+    },
+    {
+        "model": "users.rolepermissions",
+        "pk": 12,
+        "fields": {
+            "user_type": "Admin",
+            "permission": 3,
+            "can_create": true,
+            "can_retrieve": true,
+            "can_delete": true,
+            "can_update": true
+        }
+    },
+    {
+        "model": "users.rolepermissions",
+        "pk": 13,
+        "fields": {
+            "user_type": "Admin",
+            "permission": 7,
+            "can_create": true,
+            "can_retrieve": true,
+            "can_delete": true,
+            "can_update": true
+        }
+    },
+    {
+        "model": "users.rolepermissions",
+        "pk": 14,
+        "fields": {
+            "user_type": "Admin",
+            "permission": 8,
+            "can_create": true,
+            "can_retrieve": true,
+            "can_delete": true,
+            "can_update": true
+        }
+    },
+    {
+        "model": "users.rolepermissions",
+        "pk": 15,
+        "fields": {
+            "user_type": "Staff",
+            "permission": 2,
+            "can_create": false,
+            "can_retrieve": false,
+            "can_delete": false,
+            "can_update": false
+        }
+    },
+    {
+        "model": "users.rolepermissions",
+        "pk": 16,
+        "fields": {
+            "user_type": "Staff",
+            "permission": 4,
+            "can_create": false,
+            "can_retrieve": false,
+            "can_delete": false,
+            "can_update": false
+        }
+    },
+    {
+        "model": "users.rolepermissions",
+        "pk": 17,
+        "fields": {
+            "user_type": "Staff",
+            "permission": 5,
+            "can_create": false,
+            "can_retrieve": false,
+            "can_delete": false,
+            "can_update": false
+        }
+    },
+    {
+        "model": "users.rolepermissions",
+        "pk": 18,
+        "fields": {
+            "user_type": "Staff",
+            "permission": 6,
+            "can_create": false,
+            "can_retrieve": false,
+            "can_delete": false,
+            "can_update": false
+        }
+    },
+    {
+        "model": "users.rolepermissions",
+        "pk": 19,
+        "fields": {
+            "user_type": "Staff",
+            "permission": 3,
+            "can_create": false,
+            "can_retrieve": false,
+            "can_delete": false,
+            "can_update": false
+        }
+    },
+    {
+        "model": "users.rolepermissions",
+        "pk": 20,
+        "fields": {
+            "user_type": "Staff",
+            "permission": 7,
+            "can_create": true,
+            "can_retrieve": true,
+            "can_delete": false,
+            "can_update": false
+        }
+    },
+    {
+        "model": "users.rolepermissions",
+        "pk": 21,
+        "fields": {
+            "user_type": "Staff",
+            "permission": 8,
+            "can_create": false,
+            "can_retrieve": false,
+            "can_delete": false,
+            "can_update": false
+        }
+    }
+]

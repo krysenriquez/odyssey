@@ -1,0 +1,789 @@
+[
+  {
+    "model": "accounts.account",
+    "pk": 1000001,
+    "fields": {
+      "account_id": "0d18ea83-541c-4aeb-8dbf-7c03d19b2fa9",
+      "parent": null,
+      "parent_side": null,
+      "activation_code": 1,
+      "package": 3,
+      "referrer": null,
+      "first_name": "Top",
+      "middle_name": "Choice",
+      "last_name": "International",
+      "account_status": "ACTIVE",
+      "user": 2,
+      "created_by": 1,
+      "created": "2023-01-10T09:48:56.410Z",
+      "modified": "2023-01-10T09:49:52.324Z",
+      "deleted": null,
+      "is_deleted": false
+    }
+  },
+  {
+    "model": "accounts.personalinfo",
+    "pk": 1,
+    "fields": {
+      "account": 1000001,
+      "birthdate": "2023-01-13",
+      "gender": "MALE",
+      "created": "2023-01-14T22:20:00.293Z",
+      "modified": "2023-01-14T22:20:00.293Z"
+    }
+  },
+  {
+    "model": "accounts.contactinfo",
+    "pk": 1,
+    "fields": {
+      "account": 1000001,
+      "contact_number": "09192527085",
+      "created": "2023-01-14T22:19:45.696Z",
+      "modified": "2023-01-14T22:19:45.696Z"
+    }
+  },
+  {
+    "model": "accounts.addressinfo",
+    "pk": 1,
+    "fields": {
+      "account": 1000001,
+      "street": "HACIENDA GUIN-OLAYAN",
+      "city": "MANAPLA",
+      "state": "Cavite",
+      "created": "2023-01-14T22:19:18.347Z",
+      "modified": "2023-01-14T22:19:18.347Z"
+    }
+  },
+  {
+    "model": "accounts.cashoutmethod",
+    "pk": 1,
+    "fields": {
+      "account": 1000001,
+      "account_name": "RHAN BARREDO",
+      "account_number": "09771688210",
+      "method": "GCash"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 1,
+    "fields": {
+      "property": "CODE_EXPIRATION",
+      "value": "350.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 2,
+    "fields": {
+      "property": "POINT_VALUE_CONVERSION",
+      "value": "10.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 3,
+    "fields": {
+      "property": "FLUSH_OUT_PENALTY_PERCENTAGE_WEAK",
+      "value": "100.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 4,
+    "fields": {
+      "property": "FLUSH_OUT_PENALTY_PERCENTAGE_STRONG",
+      "value": "50.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 5,
+    "fields": {
+      "property": "DIRECT_REFERRAL_PERCENTAGE",
+      "value": "10.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 6,
+    "fields": {
+      "property": "REFERRAL_BONUS_COUNT",
+      "value": "2.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 7,
+    "fields": {
+      "property": "FRANCHISE_COMMISSION_PERCENTAGE",
+      "value": "10.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 8,
+    "fields": {
+      "property": "GLOBAL_POOL_BONUS_PERCENTAGE",
+      "value": "5.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 9,
+    "fields": {
+      "property": "GLOBAL_POOL_BONUS_REQUIREMENT",
+      "value": "1500.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 10,
+    "fields": {
+      "property": "COMPANY_CASHOUT_FEE_PERCENTAGE",
+      "value": "10.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 11,
+    "fields": {
+      "property": "B_WALLET_CASHOUT_DAY",
+      "value": "2.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 12,
+    "fields": {
+      "property": "B_WALLET_CASHOUT_OVERRIDE",
+      "value": "0.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 13,
+    "fields": {
+      "property": "F_WALLET_CASHOUT_DAY",
+      "value": "1.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 14,
+    "fields": {
+      "property": "F_WALLET_CASHOUT_OVERRIDE",
+      "value": "0.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 15,
+    "fields": {
+      "property": "MAX_USER_ACCOUNT_LIMIT",
+      "value": "1.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 16,
+    "fields": {
+      "property": "CODE_LENGTH",
+      "value": "15.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 17,
+    "fields": {
+      "property": "FIFTH_PAIR_PERCENTAGE",
+      "value": "20.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 18,
+    "fields": {
+      "property": "GC_WALLET_CASHOUT_DAY",
+      "value": "1.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 19,
+    "fields": {
+      "property": "GC_WALLET_CASHOUT_OVERRIDE",
+      "value": "0.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 20,
+    "fields": {
+      "property": "B_WALLET_MINIMUM_CASHOUT_AMOUNT",
+      "value": "500.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 21,
+    "fields": {
+      "property": "F_WALLET_MINIMUM_CASHOUT_AMOUNT",
+      "value": "500.00"
+    }
+  },
+  {
+    "model": "core.setting",
+    "pk": 22,
+    "fields": {
+      "property": "GC_WALLET_MINIMUM_CASHOUT_AMOUNT",
+      "value": "1000.00"
+    }
+  },
+  {
+    "model": "core.package",
+    "pk": 1,
+    "fields": {
+      "package_name": "Starter",
+      "package_amount": "1599.00",
+      "has_pairing": true,
+      "point_value": "20.00",
+      "flush_out_limit": "250.00",
+      "is_franchise": false,
+      "is_bco": false,
+      "created_by": 1
+    }
+  },
+  {
+    "model": "core.package",
+    "pk": 2,
+    "fields": {
+      "package_name": "Silver",
+      "package_amount": "5999.00",
+      "has_pairing": true,
+      "point_value": "70.00",
+      "flush_out_limit": "1000.00",
+      "is_franchise": false,
+      "is_bco": false,
+      "created_by": 1
+    }
+  },
+  {
+    "model": "core.package",
+    "pk": 3,
+    "fields": {
+      "package_name": "Gold",
+      "package_amount": "34999.00",
+      "has_pairing": true,
+      "point_value": "500.00",
+      "flush_out_limit": "4000.00",
+      "is_franchise": false,
+      "is_bco": false,
+      "created_by": 1
+    }
+  },
+  {
+    "model": "core.package",
+    "pk": 4,
+    "fields": {
+      "package_name": "Pizza Foodcart 34,999",
+      "package_amount": "34999.00",
+      "has_pairing": false,
+      "point_value": "0.00",
+      "flush_out_limit": "0.00",
+      "is_franchise": true,
+      "is_bco": false,
+      "created_by": 1
+    }
+  },
+  {
+    "model": "core.package",
+    "pk": 5,
+    "fields": {
+      "package_name": "Franchise 134,999",
+      "package_amount": "134999.00",
+      "has_pairing": true,
+      "point_value": "0.00",
+      "flush_out_limit": "0.00",
+      "is_franchise": false,
+      "is_bco": false,
+      "created_by": null
+    }
+  },
+  {
+    "model": "core.referralbonus",
+    "pk": 1,
+    "fields": {
+      "package_referrer": 3,
+      "package_referred": 3,
+      "point_value": "600.00",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "core.referralbonus",
+    "pk": 2,
+    "fields": {
+      "package_referrer": 3,
+      "package_referred": 2,
+      "point_value": "100.00",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "core.referralbonus",
+    "pk": 3,
+    "fields": {
+      "package_referrer": 2,
+      "package_referred": 3,
+      "point_value": "300.00",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "core.referralbonus",
+    "pk": 4,
+    "fields": {
+      "package_referrer": 2,
+      "package_referred": 2,
+      "point_value": "100.00",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "core.leadershipbonus",
+    "pk": 1,
+    "fields": {
+      "package": 3,
+      "level": "1.00",
+      "point_value_percentage": "5.00",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "core.leadershipbonus",
+    "pk": 2,
+    "fields": {
+      "package": 3,
+      "level": "2.00",
+      "point_value_percentage": "3.00",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "core.leadershipbonus",
+    "pk": 3,
+    "fields": {
+      "package": 2,
+      "level": "1.00",
+      "point_value_percentage": "3.00",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "core.code",
+    "pk": 1,
+    "fields": {
+      "code": "123456789ABCDEF",
+      "package": 3,
+      "code_type": "ACTIVATION",
+      "status": "USED",
+      "owner": 1000001,
+      "created_by": 1,
+      "is_expiring": false,
+      "created": "2023-01-10T09:49:23.584Z",
+      "modified": "2023-01-13T15:26:56.632Z",
+      "deleted": null,
+      "is_deleted": false
+    }
+  },
+  {
+    "model": "core.activity",
+    "pk": 1,
+    "fields": {
+      "account": 1000001,
+      "activity_type": "ENTRY",
+      "activity_amount": "34999.00",
+      "status": "DONE",
+      "wallet": "C_WALLET",
+      "content_type": 11,
+      "object_id": 1000001,
+      "created_by": 1,
+      "created": "2023-01-10T09:50:29.036Z",
+      "modified": "2023-01-14T22:28:38.564Z",
+      "deleted": null,
+      "is_deleted": false,
+      "note": ""
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$390000$6IY8RZJwg61AopiR4tzfiz$T3NUqr+jIuJpzcdPEbT6uVit2UFYF0+hk2XI+GSq/js=",
+      "last_login": "2023-01-13T04:21:41.605Z",
+      "is_superuser": true,
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": true,
+      "date_joined": "2023-01-09T18:10:48.653Z",
+      "user_id": "d0ea99cc-4939-49d9-8c8d-6df583a03826",
+      "username": "tcideveloper",
+      "email_address": "tcideveloper@odyssey.com",
+      "user_type": "Developer",
+      "is_active": true,
+      "created": "2023-01-09T18:10:48.907Z",
+      "modified": "2023-01-09T18:10:48.907Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 2,
+    "fields": {
+      "password": "pbkdf2_sha256$390000$w61uctePQENZizcxH369SC$14ibhbtaSUnHoYT8/iFinCsH/rvHv6b6bLLjs9/3WY0=",
+      "last_login": null,
+      "is_superuser": false,
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "date_joined": "2023-01-10T09:48:48.509Z",
+      "user_id": "cdd9d961-344b-421d-8340-4e287d69301b",
+      "username": "tc01",
+      "email_address": "tc01@topchoiceinternational.com",
+      "user_type": "Member",
+      "is_active": true,
+      "created": "2023-01-10T09:48:48.782Z",
+      "modified": "2023-01-10T22:37:15.051Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 3,
+    "fields": {
+      "password": "pbkdf2_sha256$390000$bjqekHe7lDIrvXar9ksBbD$PlQm8GiaeeRpvcC+voBX3FeMG2cue85JcFcSu0VFVRk=",
+      "last_login": "2023-01-13T11:13:35.797Z",
+      "is_superuser": true,
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": true,
+      "date_joined": "2023-01-10T13:28:28.866Z",
+      "user_id": "55bc97d5-4b83-443b-87dd-748f8bc91bbd",
+      "username": "tciadmin",
+      "email_address": "tciadmin@topchoiceinternational.com",
+      "user_type": "Admin",
+      "is_active": true,
+      "created": "2023-01-10T13:28:29.141Z",
+      "modified": "2023-01-10T13:28:41.892Z",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.permission",
+    "pk": 2,
+    "fields": {
+      "permission_name": "Member Management"
+    }
+  },
+  {
+    "model": "users.permission",
+    "pk": 3,
+    "fields": {
+      "permission_name": "Franchisee Management"
+    }
+  },
+  {
+    "model": "users.permission",
+    "pk": 4,
+    "fields": {
+      "permission_name": "Cashout Management"
+    }
+  },
+  {
+    "model": "users.permission",
+    "pk": 5,
+    "fields": {
+      "permission_name": "Activity Management"
+    }
+  },
+  {
+    "model": "users.permission",
+    "pk": 6,
+    "fields": {
+      "permission_name": "Package Management"
+    }
+  },
+  {
+    "model": "users.permission",
+    "pk": 7,
+    "fields": {
+      "permission_name": "Code Management"
+    }
+  },
+  {
+    "model": "users.permission",
+    "pk": 8,
+    "fields": {
+      "permission_name": "Settings Management"
+    }
+  },
+  {
+    "model": "users.rolepermissions",
+    "pk": 1,
+    "fields": {
+      "user_type": "Developer",
+      "permission": 2,
+      "can_create": true,
+      "can_retrieve": true,
+      "can_delete": true,
+      "can_update": true
+    }
+  },
+  {
+    "model": "users.rolepermissions",
+    "pk": 2,
+    "fields": {
+      "user_type": "Developer",
+      "permission": 4,
+      "can_create": true,
+      "can_retrieve": true,
+      "can_delete": true,
+      "can_update": true
+    }
+  },
+  {
+    "model": "users.rolepermissions",
+    "pk": 3,
+    "fields": {
+      "user_type": "Developer",
+      "permission": 5,
+      "can_create": true,
+      "can_retrieve": true,
+      "can_delete": true,
+      "can_update": true
+    }
+  },
+  {
+    "model": "users.rolepermissions",
+    "pk": 4,
+    "fields": {
+      "user_type": "Developer",
+      "permission": 6,
+      "can_create": true,
+      "can_retrieve": true,
+      "can_delete": true,
+      "can_update": true
+    }
+  },
+  {
+    "model": "users.rolepermissions",
+    "pk": 5,
+    "fields": {
+      "user_type": "Developer",
+      "permission": 3,
+      "can_create": true,
+      "can_retrieve": true,
+      "can_delete": true,
+      "can_update": true
+    }
+  },
+  {
+    "model": "users.rolepermissions",
+    "pk": 6,
+    "fields": {
+      "user_type": "Developer",
+      "permission": 7,
+      "can_create": true,
+      "can_retrieve": true,
+      "can_delete": true,
+      "can_update": true
+    }
+  },
+  {
+    "model": "users.rolepermissions",
+    "pk": 7,
+    "fields": {
+      "user_type": "Developer",
+      "permission": 8,
+      "can_create": true,
+      "can_retrieve": true,
+      "can_delete": true,
+      "can_update": true
+    }
+  },
+  {
+    "model": "users.rolepermissions",
+    "pk": 8,
+    "fields": {
+      "user_type": "Admin",
+      "permission": 2,
+      "can_create": true,
+      "can_retrieve": true,
+      "can_delete": true,
+      "can_update": true
+    }
+  },
+  {
+    "model": "users.rolepermissions",
+    "pk": 9,
+    "fields": {
+      "user_type": "Admin",
+      "permission": 4,
+      "can_create": true,
+      "can_retrieve": true,
+      "can_delete": true,
+      "can_update": true
+    }
+  },
+  {
+    "model": "users.rolepermissions",
+    "pk": 10,
+    "fields": {
+      "user_type": "Admin",
+      "permission": 5,
+      "can_create": true,
+      "can_retrieve": true,
+      "can_delete": true,
+      "can_update": true
+    }
+  },
+  {
+    "model": "users.rolepermissions",
+    "pk": 11,
+    "fields": {
+      "user_type": "Admin",
+      "permission": 6,
+      "can_create": true,
+      "can_retrieve": true,
+      "can_delete": true,
+      "can_update": true
+    }
+  },
+  {
+    "model": "users.rolepermissions",
+    "pk": 12,
+    "fields": {
+      "user_type": "Admin",
+      "permission": 3,
+      "can_create": true,
+      "can_retrieve": true,
+      "can_delete": true,
+      "can_update": true
+    }
+  },
+  {
+    "model": "users.rolepermissions",
+    "pk": 13,
+    "fields": {
+      "user_type": "Admin",
+      "permission": 7,
+      "can_create": true,
+      "can_retrieve": true,
+      "can_delete": true,
+      "can_update": true
+    }
+  },
+  {
+    "model": "users.rolepermissions",
+    "pk": 14,
+    "fields": {
+      "user_type": "Admin",
+      "permission": 8,
+      "can_create": true,
+      "can_retrieve": true,
+      "can_delete": true,
+      "can_update": true
+    }
+  },
+  {
+    "model": "users.rolepermissions",
+    "pk": 15,
+    "fields": {
+      "user_type": "Staff",
+      "permission": 2,
+      "can_create": false,
+      "can_retrieve": false,
+      "can_delete": false,
+      "can_update": false
+    }
+  },
+  {
+    "model": "users.rolepermissions",
+    "pk": 16,
+    "fields": {
+      "user_type": "Staff",
+      "permission": 4,
+      "can_create": false,
+      "can_retrieve": false,
+      "can_delete": false,
+      "can_update": false
+    }
+  },
+  {
+    "model": "users.rolepermissions",
+    "pk": 17,
+    "fields": {
+      "user_type": "Staff",
+      "permission": 5,
+      "can_create": false,
+      "can_retrieve": false,
+      "can_delete": false,
+      "can_update": false
+    }
+  },
+  {
+    "model": "users.rolepermissions",
+    "pk": 18,
+    "fields": {
+      "user_type": "Staff",
+      "permission": 6,
+      "can_create": false,
+      "can_retrieve": false,
+      "can_delete": false,
+      "can_update": false
+    }
+  },
+  {
+    "model": "users.rolepermissions",
+    "pk": 19,
+    "fields": {
+      "user_type": "Staff",
+      "permission": 3,
+      "can_create": false,
+      "can_retrieve": false,
+      "can_delete": false,
+      "can_update": false
+    }
+  },
+  {
+    "model": "users.rolepermissions",
+    "pk": 20,
+    "fields": {
+      "user_type": "Staff",
+      "permission": 7,
+      "can_create": true,
+      "can_retrieve": true,
+      "can_delete": false,
+      "can_update": false
+    }
+  },
+  {
+    "model": "users.rolepermissions",
+    "pk": 21,
+    "fields": {
+      "user_type": "Staff",
+      "permission": 8,
+      "can_create": false,
+      "can_retrieve": false,
+      "can_delete": false,
+      "can_update": false
+    }
+  }
+]

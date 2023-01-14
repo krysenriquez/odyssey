@@ -6,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "django-insecure-2tj+!nv*4b7yy!i+#%m24cqv=4+nzwsaxh-dcw&k31po9exolv"
 
-DEBUG = True
+DEBUG = False
 LIVE = True
 
 if DEBUG and not LIVE:
@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "django_cron",
     "corsheaders",
     "rest_framework_simplejwt.token_blacklist",
     "users",
@@ -252,3 +253,9 @@ MEDIA_ROOT = Path.absolute(Path(BASE_DIR, "statics", "media"))
 MEDIA_URL = "/media/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+CRON_CLASSES = [
+    "vanguard.cron.DeleteBlacklistedTokens",
+    "vanguard.cron.DeleteOutstandingTokens",
+]
