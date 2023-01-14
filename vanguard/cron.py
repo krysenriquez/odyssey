@@ -7,7 +7,7 @@ from django.utils import timezone
 
 
 class DeleteBlacklistedTokens(CronJobBase):
-    RUN_EVERY_MINS = 1
+    RUN_EVERY_MINS = 1440
     RETRY_AFTER_FAILURE_MINS = 1
     schedule = Schedule(run_every_mins=RUN_EVERY_MINS, retry_after_failure_mins=RETRY_AFTER_FAILURE_MINS)
     code = "vanguard.delete_blacklisted_tokens"
@@ -19,7 +19,7 @@ class DeleteBlacklistedTokens(CronJobBase):
 
 
 class DeleteOutstandingTokens(CronJobBase):
-    RUN_EVERY_MINS = 1
+    RUN_EVERY_MINS = 1440
     RETRY_AFTER_FAILURE_MINS = 1
     schedule = Schedule(run_every_mins=RUN_EVERY_MINS, retry_after_failure_mins=RETRY_AFTER_FAILURE_MINS)
     code = "vanguard.delete_outstanding_tokens"
