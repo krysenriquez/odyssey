@@ -48,7 +48,8 @@ class WhoAmIView(views.APIView):
 
         if request.user.user_type == UserType.MEMBER:
             account = Account.objects.get(user=request.user)
-            data["user_avatar"] = request.build_absolute_uri("/") + account.avatar_info.file_attachment.url
+            if account.avatar_info.file_attachment and hasattr(account.avatar_info.file_attachment, "url"):
+                data["user_avatar"] = request.build_absolute_uri(account.avatar_info.file_attachment.url)
 
         return Response(
             data=data,
