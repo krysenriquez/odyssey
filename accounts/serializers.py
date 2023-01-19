@@ -2,6 +2,7 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 from django.utils import timezone
 from .models import *
+from users.serializers import UserSerializer
 
 
 class PersonalInfoSerializer(ModelSerializer):
@@ -130,8 +131,8 @@ class AccountSerializer(ModelSerializer):
             if "id" in personal_info.keys():
                 if PersonalInfo.objects.filter(id=personal_info["id"]).exists():
                     e = PersonalInfo.objects.get(id=personal_info["id"])
-                    e.birthdate = validated_data.get("birthdate", e.birthdate)
-                    e.gender = validated_data.get("gender", e.gender)
+                    e.birthdate = validated_data.get("birthdate", personal_info["birthdate"])
+                    e.gender = validated_data.get("gender", personal_info["gender"])
                     e.save()
             else:
                 e = PersonalInfo.objects.create(**personal_info, account=instance)
@@ -140,7 +141,7 @@ class AccountSerializer(ModelSerializer):
             if "id" in contact_info.keys():
                 if ContactInfo.objects.filter(id=contact_info["id"]).exists():
                     e = ContactInfo.objects.get(id=contact_info["id"])
-                    e.contact_number = validated_data.get("contact_number", e.contact_number)
+                    e.contact_number = validated_data.get("contact_number", contact_info["contact_number"])
                     e.save()
             else:
                 e = ContactInfo.objects.create(**contact_info, account=instance)
@@ -149,9 +150,9 @@ class AccountSerializer(ModelSerializer):
             if "id" in address_info.keys():
                 if AddressInfo.objects.filter(id=address_info["id"]).exists():
                     e = AddressInfo.objects.get(id=address_info["id"])
-                    e.street = validated_data.get("street", e.street)
-                    e.city = validated_data.get("city", e.city)
-                    e.state = validated_data.get("state", e.state)
+                    e.street = validated_data.get("street", address_info["street"])
+                    e.city = validated_data.get("city", address_info["city"])
+                    e.state = validated_data.get("state", address_info["state"])
                     e.save()
             else:
                 e = AddressInfo.objects.create(**address_info, account=instance)
@@ -160,8 +161,8 @@ class AccountSerializer(ModelSerializer):
             if "id" in avatar_info.keys():
                 if AvatarInfo.objects.filter(id=avatar_info["id"]).exists():
                     e = AvatarInfo.objects.get(id=avatar_info["id"])
-                    e.file_name = validated_data.get("file_name", e.file_name)
-                    e.file_attachment = validated_data.get("file_attachment", e.file_attachment)
+                    e.file_name = validated_data.get("file_name", avatar_info["file_name"])
+                    e.file_attachment = validated_data.get("file_attachment", avatar_info["file_attachment"])
                     e.save()
             else:
                 e = AvatarInfo.objects.create(**avatar_info, account=instance)
@@ -277,6 +278,17 @@ class UserAccountAvatarSerializer(ModelSerializer):
         ]
 
 
+class UserAccountSerializer(ModelSerializer):
+    user = UserSerializer(required=False)
+
+    class Meta:
+        model = Account
+        fields = [
+            "account_id",
+            "user",
+        ]
+
+
 class AccountAvatarSerializer(ModelSerializer):
     avatar_info = AvatarInfoSerializer(many=True, required=False)
     account_name = serializers.CharField(read_only=True)
@@ -307,7 +319,7 @@ class RecursiveField(serializers.BaseSerializer):
         return instance
 
 
-class GenealogyAccountSerializer(ModelSerializer):
+class GenealogyAccountMemberSerializer(ModelSerializer):
     avatar = serializers.ImageField(source="avatar_info.file_attachment", required=False)
     account_name = serializers.CharField(source="get_account_name", required=False)
     account_full_name = serializers.CharField(source="get_full_name", required=False)
@@ -338,7 +350,65 @@ class GenealogyAccountSerializer(ModelSerializer):
         account_id = request.query_params["account_id"]
         account = request.user.account_user.all().first()
         path = instance.get_all_parents_side(parent_id=account.account_id)
-        data = super(GenealogyAccountSerializer, self).to_representation(instance)
+        data = super(GenealogyAccountMemberSerializer, self).to_representation(instance)
+        data.update(
+            {
+                "path": path,
+            }
+        )
+
+        return data
+
+    class Meta:
+        model = Account
+        ordering = ("parent_side",)
+        fields = [
+            "account_id",
+            "account_name",
+            "account_full_name",
+            "account_number",
+            "account_status",
+            "package_name",
+            "parent_side",
+            "depth",
+            "avatar",
+            "children",
+            "all_left_children_count",
+            "all_right_children_count",
+        ]
+
+
+class GenealogyAccountAdminSerializer(ModelSerializer):
+    avatar = serializers.ImageField(source="avatar_info.file_attachment", required=False)
+    account_name = serializers.CharField(source="get_account_name", required=False)
+    account_full_name = serializers.CharField(source="get_full_name", required=False)
+    account_number = serializers.CharField(source="get_account_number", required=False)
+    package_name = serializers.CharField(source="package.package_name", required=False)
+    all_left_children_count = serializers.CharField(read_only=True)
+    all_right_children_count = serializers.CharField(read_only=True)
+    depth = serializers.SerializerMethodField()
+
+    def __init__(self, *args, depth=0, path=[], **kwargs):
+        super().__init__(*args, **kwargs)
+        self.depth = depth
+
+    def get_depth(self, obj):
+        return self.depth
+
+    def get_fields(self):
+        fields = super().get_fields()
+        if self.depth < 5:
+            fields["children"] = RecursiveField(many=True, required=False)
+        else:
+            del fields["children"]
+
+        return fields
+
+    def to_representation(self, instance):
+        request = self.context["request"]
+        account_id = request.query_params["account_id"]
+        path = instance.get_all_parents_side(parent_id=account_id)
+        data = super(GenealogyAccountAdminSerializer, self).to_representation(instance)
         data.update(
             {
                 "path": path,

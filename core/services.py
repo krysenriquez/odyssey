@@ -2,6 +2,8 @@ import decimal
 import logging
 import calendar
 import string, random
+from django.conf import settings
+from django.core.mail import EmailMessage
 from django.db.models.functions import TruncDate, Coalesce
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q, Sum, Case, When, F, DecimalField
@@ -15,6 +17,16 @@ from core.models import Activity, Setting, Code, Package, ReferralBonus, Leaders
 from core.enums import ActivityType, ActivityStatus, WalletType, Settings, CodeStatus, CodeType
 
 logger = logging.getLogger("ocmLogger")
+
+
+def send_email(subject, body, email):
+    try:
+        email_msg = EmailMessage(subject, body, settings.EMAIL_HOST_USER, [email], reply_to=[email])
+        email_msg.content_subtype = "html"
+        email_msg.send()
+        return "Email Sent"
+    except:
+        return "Email failed, try again later."
 
 
 # Core Settings
@@ -155,7 +167,7 @@ def compute_cashout_total(request):
 def compute_minimum_cashout_amount(amount, wallet):
     if wallet == WalletType.F_WALLET or wallet == WalletType.B_WALLET or wallet == WalletType.GC_WALLET:
         property = "%s%s" % (wallet, "_MINIMUM_CASHOUT_AMOUNT")
-        print(property)
+
         if property:
             minimum_cashout_amount = int(get_setting(property=property))
             return amount >= minimum_cashout_amount, minimum_cashout_amount

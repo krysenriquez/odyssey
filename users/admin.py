@@ -67,6 +67,9 @@ class UserAdmin(BaseUserAdmin):
                     "is_staff",
                     "is_superuser",
                     "user_permissions",
+                    "can_change_username",
+                    "can_change_email_address",
+                    "can_change_password",
                 )
             },
         ),

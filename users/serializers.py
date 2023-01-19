@@ -90,6 +90,11 @@ class UserSerializer(ModelSerializer):
         instance.email_address = validated_data.get("email_address", instance.email_address)
         instance.user_type = validated_data.get("user_type", instance.user_type)
         instance.is_active = validated_data.get("is_active", instance.is_active)
+        instance.can_change_username = validated_data.get("can_change_username", instance.can_change_username)
+        instance.can_change_email_address = validated_data.get(
+            "can_change_email_address", instance.can_change_email_address
+        )
+        instance.can_change_password = validated_data.get("can_change_password", instance.can_change_password)
         instance.save()
 
         return instance
@@ -97,6 +102,12 @@ class UserSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = [
+            "user_id",
             "username",
             "email_address",
+            "user_type",
+            "is_active",
+            "can_change_username",
+            "can_change_email_address",
+            "can_change_password",
         ]

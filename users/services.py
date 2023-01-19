@@ -1,5 +1,6 @@
 from users.models import User
 
+
 def create_new_user(request):
     data = {
         "username": request["username"],
@@ -9,3 +10,7 @@ def create_new_user(request):
     user.set_password(request["password"])
     user.save()
     return user
+
+
+def create_user_logs(request):
+    pass

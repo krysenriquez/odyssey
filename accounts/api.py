@@ -14,9 +14,11 @@ from accounts.serializers import (
     AccountListSerializer,
     AccountReferralsSerializer,
     AccountWalletSerializer,
-    GenealogyAccountSerializer,
+    GenealogyAccountAdminSerializer,
+    GenealogyAccountMemberSerializer,
     BinaryAccountProfileSerializer,
     UserAccountAvatarSerializer,
+    UserAccountSerializer,
 )
 from accounts.models import Account, CashoutMethod
 from accounts.enums import ParentSide
@@ -24,6 +26,9 @@ from accounts.services import (
     is_valid_uuid,
     process_create_account_request,
     activate_account,
+    process_media,
+    transform_account_form_data_to_json,
+    transform_admin_account_form_data_to_json,
     update_user_status,
     verify_account_creation,
     redact_string,
@@ -36,6 +41,19 @@ from core.models import Code
 from core.enums import ActivityStatus, CodeStatus, WalletType, ActivityType, CodeType
 from core.services import comp_plan, create_leadership_bonus_activity, verify_code_details
 from users.models import User
+
+
+class UserAccountViewSet(ModelViewSet):
+    queryset = Account.objects.all()
+    serializer_class = UserAccountSerializer
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser]
+    http_method_names = ["get"]
+
+    def get_queryset(self):
+        account_id = self.request.query_params.get("account_id", None)
+        queryset = Account.objects.exclude(is_deleted=True).filter(account_id=account_id).all()
+        if queryset.exists():
+            return queryset
 
 
 class UserAccountAvatarViewSet(ModelViewSet):
@@ -140,74 +158,54 @@ class TopAccountWalletViewSet(ModelViewSet):
 
 class GenealogyAccountAdminViewSet(ModelViewSet):
     queryset = Account.objects.all()
-    serializer_class = GenealogyAccountSerializer
+    serializer_class = GenealogyAccountAdminSerializer
     permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser]
     http_method_names = ["get"]
 
     def get_queryset(self):
-        queryset = Account.objects.prefetch_related(
-            Prefetch(
-                "children",
-                queryset=Account.objects.prefetch_related(
-                    Prefetch(
-                        "children",
-                        queryset=Account.objects.prefetch_related(
-                            Prefetch(
-                                "children",
-                                queryset=Account.objects.prefetch_related(
-                                    Prefetch(
-                                        "children",
-                                        queryset=Account.objects.prefetch_related(
-                                            Prefetch(
-                                                "children",
-                                                queryset=Account.objects.order_by("parent_side").all(),
-                                            )
-                                        )
-                                        .order_by("parent_side")
-                                        .all(),
-                                    )
-                                )
-                                .order_by("parent_side")
-                                .all(),
-                            )
-                        )
-                        .order_by("parent_side")
-                        .all(),
-                    )
-                )
-                .order_by("parent_side")
-                .all(),
-            ),
-        ).all()
-
         account_id = self.request.query_params.get("account_id", None)
-        account_number = self.request.query_params.get("account_number", None)
+        account = []
 
-        if account_id is None and account_number is not None:
-            queryset = queryset.filter(id=account_number.lstrip("0"))
-
-            for member in queryset:
-                member.all_left_children_count = len(member.get_all_children_side(parent_side=ParentSide.LEFT))
-                member.all_right_children_count = len(member.get_all_children_side(parent_side=ParentSide.RIGHT))
-
-            return queryset
-
-        elif account_id is not None and account_number is not None:
+        if account_id is not None and is_valid_uuid(account_id):
             account = Account.objects.get(account_id=account_id)
-            children = account.get_all_children()
-            child = Account.objects.get(id=account_number.lstrip("0"))
+        if account_id is not None and is_valid_uuid(account_id) == False:
+            account = get_object_or_404(Account, id=account_id.lstrip("0"))
 
-            if child in children or child == account:
-                queryset = queryset.filter(id=account_number.lstrip("0"))
-
-                for member in queryset:
-                    member.all_left_children_count = len(member.get_all_children_side(parent_side=ParentSide.LEFT))
-                    member.all_right_children_count = len(member.get_all_children_side(parent_side=ParentSide.RIGHT))
-
-                return queryset
-
-        elif account_id is not None and account_number is None:
-            queryset = queryset.filter(account_id=account_id)
+        if account is not None:
+            queryset = Account.objects.prefetch_related(
+                Prefetch(
+                    "children",
+                    queryset=Account.objects.prefetch_related(
+                        Prefetch(
+                            "children",
+                            queryset=Account.objects.prefetch_related(
+                                Prefetch(
+                                    "children",
+                                    queryset=Account.objects.prefetch_related(
+                                        Prefetch(
+                                            "children",
+                                            queryset=Account.objects.prefetch_related(
+                                                Prefetch(
+                                                    "children",
+                                                    queryset=Account.objects.order_by("parent_side").all(),
+                                                )
+                                            )
+                                            .order_by("parent_side")
+                                            .all(),
+                                        )
+                                    )
+                                    .order_by("parent_side")
+                                    .all(),
+                                )
+                            )
+                            .order_by("parent_side")
+                            .all(),
+                        )
+                    )
+                    .order_by("parent_side")
+                    .all(),
+                ),
+            ).filter(id=account.pk)
 
             for member in queryset:
                 member.all_left_children_count = len(member.get_all_children_side(parent_side=ParentSide.LEFT))
@@ -218,7 +216,7 @@ class GenealogyAccountAdminViewSet(ModelViewSet):
 
 class GenealogyAccountMemberViewSet(ModelViewSet):
     queryset = Account.objects.all()
-    serializer_class = GenealogyAccountSerializer
+    serializer_class = GenealogyAccountMemberSerializer
     permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
     http_method_names = ["get"]
 
@@ -341,6 +339,59 @@ class CreateAccountView(views.APIView):
             return Response(
                 data={"message": "Unable to create Account. Extreme Side Validation"},
                 status=status.HTTP_400_BAD_REQUEST,
+            )
+
+
+class UpdateAccountAdminView(views.APIView):
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser]
+
+    def post(self, request, *args, **kwargs):
+        data = transform_admin_account_form_data_to_json(request.data)
+        account = Account.objects.get(account_id=data["account_id"])
+
+        serializer = AccountSerializer(account, data=data, partial=True)
+        if serializer.is_valid():
+            updated_member = serializer.save()
+            if updated_member:
+                return Response(
+                    data={"message": "Profile updated"},
+                    status=status.HTTP_200_OK,
+                )
+            return Response(
+                data={"message": "Unable to update Account"},
+                status=status.HTTP_409_CONFLICT,
+            )
+        else:
+            print(serializer.errors)
+            return Response(
+                data={"message": "Unable to update Account"},
+                status=status.HTTP_409_CONFLICT,
+            )
+
+
+class UpdateAccountView(views.APIView):
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
+
+    def post(self, request, *args, **kwargs):
+        account = Account.objects.get(user=request.user)
+        data = transform_account_form_data_to_json(request.data)
+
+        serializer = AccountSerializer(account, data=data, partial=True)
+        if serializer.is_valid():
+            updated_member = serializer.save()
+            if updated_member:
+                return Response(
+                    data={"message": "Profile updated"},
+                    status=status.HTTP_200_OK,
+                )
+            return Response(
+                data={"message": "Unable to update Account"},
+                status=status.HTTP_409_CONFLICT,
+            )
+        else:
+            return Response(
+                data={"message": "Unable to update Account"},
+                status=status.HTTP_409_CONFLICT,
             )
 
 
