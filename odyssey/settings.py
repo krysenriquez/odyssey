@@ -82,6 +82,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "odyssey.middleware.SleepMiddleware",
 ]
 
 ROOT_URLCONF = "odyssey.urls"
@@ -278,3 +279,7 @@ EMAIL_HOST_PASSWORD = "TopChoice2022!"
 EMAIL_PORT = 80
 EMAIL_USE_SSL = False
 EMAIL_USE_TLS = True
+
+
+SLEEP_TIME_MIN = 10
+SLEEP_TIME_MAX = 30

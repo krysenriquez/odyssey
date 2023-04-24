@@ -157,9 +157,10 @@ class ChangePasswordAdminView(views.APIView):
                 data={"message": "Invalid Admin Password."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        logged_user.set_password(new_password)
-        logged_user.can_change_password = False
-        logged_user.save()
+
+        member_user.set_password(new_password)
+        member_user.can_change_password = False
+        member_user.save()
 
         return Response(data={"message": "Password Updated."}, status=status.HTTP_200_OK)
 
