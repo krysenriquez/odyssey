@@ -7,7 +7,7 @@ from rest_framework_simplejwt.serializers import (
     TokenObtainPairSerializer,
     TokenObtainSerializer,
     TokenRefreshSerializer,
-    TokenObtainSlidingSerializer
+    TokenObtainSlidingSerializer,
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status, exceptions
@@ -19,6 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
         fields = ("id", "username", "email_address")
+
 
 class AuthAdminLoginSerializer(TokenObtainPairSerializer, TokenObtainSerializer):
     def get_token(cls, user):

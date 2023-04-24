@@ -1,7 +1,9 @@
+import json
 import random
 import uuid
+from django.http import QueryDict
 from django.shortcuts import get_object_or_404
-from accounts.models import Account, CashoutMethod
+from accounts.models import Account, AvatarInfo, CashoutMethod
 from accounts.enums import AccountStatus
 from core.enums import CodeStatus
 from core.services import get_code_details
@@ -107,7 +109,7 @@ def verify_account_name(request):
     queryset = Account.objects.filter(
         first_name__exact=first_name, middle_name__exact=middle_name, last_name__exact=last_name
     )
-    print(queryset)
+
     if queryset.exists():
         return False
     return True
@@ -123,7 +125,7 @@ def verify_sponsor_account(request):
 
     grandparents = parent.get_all_parents_with_extreme_side(parent_side=request.data["parent_side"])
     grandparents.append({"account": parent})
-    
+
     can_sponsor = next((grandparent for grandparent in grandparents if grandparent["account"] == sponsor), [])
 
     return bool(can_sponsor)
@@ -149,3 +151,63 @@ def update_user_status(request):
     account = get_object_or_404(Account, account_id=request.data["account_id"])
     is_updated = account.user.update_is_active()
     return is_updated
+
+
+def transform_admin_account_form_data_to_json(request):
+    data = {}
+    for key, value in request.items():
+        if type(value) != str:
+            data[key] = value
+            continue
+        if "{" in value or "[" in value:
+            try:
+                data[key] = json.loads(value)
+            except ValueError:
+                data[key] = value
+        else:
+            data[key] = value
+
+    data["account_id"] = uuid.UUID(request["account_id"].strip('"'))
+
+    if request.get("avatar_info['id']") is not None:
+        data["avatar_info"] = {
+            "id": request["avatar_info['id']"],
+            "file_attachment": request["avatar_info['fileAttachment']"],
+            "file_name": request["avatar_info['fileName']"],
+        }
+
+    return data
+
+
+def transform_account_form_data_to_json(request):
+    data = {}
+    for key, value in request.items():
+        if type(value) != str:
+            data[key] = value
+            continue
+        if "{" in value or "[" in value:
+            try:
+                data[key] = json.loads(value)
+            except ValueError:
+                data[key] = value
+        else:
+            data[key] = value
+
+    if request.get("avatar_info['id']") is not None:
+        data["avatar_info"] = {
+            "id": request["avatar_info['id']"],
+            "file_attachment": request["avatar_info['fileAttachment']"],
+            "file_name": request["avatar_info['fileName']"],
+        }
+
+    return data
+
+
+def process_media(account, attachment):
+    avatar_info, created = AvatarInfo.objects.get_or_create(account=account)
+
+    if created:
+        avatar_info.file_attachment(attachment)
+        avatar_info.save()
+
+    return avatar_info

@@ -2,6 +2,7 @@ from rest_framework import status, views, permissions
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from django.template.loader import render_to_string
 from django.db.models import Sum, F, Q, Case, When, DecimalField
 from django.db.models.functions import Coalesce
 from accounts.models import Account
@@ -22,6 +23,7 @@ from core.services import (
     create_payout_activity,
     process_create_franchisee_request,
     process_save_cashout_status,
+    send_email,
     update_code_status,
     verify_code_details,
 )
@@ -361,8 +363,7 @@ class GenerateCodeView(views.APIView):
 
 
 class VerifyCodeView(views.APIView):
-    permission_classes = []
-    throttle_classes = [FivePerMinuteAnonThrottle]
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
 
     def post(self, request, *args, **kwargs):
         is_verified, message, activation_code, package = verify_code_details(request)
@@ -408,7 +409,7 @@ class VerifyCodeView(views.APIView):
 
 
 class UpdateCodeStatusView(views.APIView):
-    permission_classes = []
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
 
     def post(self, request, *args, **kwargs):
         is_updated = update_code_status(request)
@@ -1015,9 +1016,7 @@ class RequestCashoutView(views.APIView):
 
     def post(self, request, *args, **kwargs):
         processed_request = process_create_cashout_request(request)
-        print(processed_request)
         serializer = CreateActivitiesSerializer(data=processed_request)
-        print(serializer)
 
         if serializer.is_valid():
             cashout = serializer.save()
@@ -1029,7 +1028,6 @@ class RequestCashoutView(views.APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
         else:
-            print(serializer.errors)
             return Response(
                 data={"message": "Unable to create Cashout Request."},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -1092,8 +1090,7 @@ class FranchiseeListViewSet(ModelViewSet):
 
 
 class VerifyFranchiseeCodeView(views.APIView):
-    permission_classes = []
-    throttle_classes = [FivePerMinuteAnonThrottle]
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
 
     def post(self, request, *args, **kwargs):
         is_verified, message, activation_code, package = verify_code_details(request)
@@ -1137,7 +1134,6 @@ class CreateFranchiseeView(views.APIView):
 
         processed_request, code, package = process_create_franchisee_request(request)
         if not processed_request:
-            print("here")
             return Response(
                 data={"message": "Unable to create Franchisee."},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -1156,8 +1152,23 @@ class CreateFranchiseeView(views.APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         else:
-            print(serializer.errors)
             return Response(
                 data={"message": "Unable to create Franchisee."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+class SendEmailView(views.APIView):
+    permission_classes = []
+
+    def post(self, request, *args, **kwargs):
+        subject = "Forgot Password"
+        email = "krystjyn.enriquez@gmail.com"
+
+        msg_html = render_to_string("forgot-password.html", {"username": "test", "link": "test-link"})
+
+        message = send_email(subject, msg_html, email)
+        return Response(
+            data={"message": message},
+            status=status.HTTP_200_OK,
+        )

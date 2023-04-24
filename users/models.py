@@ -83,6 +83,15 @@ class User(AbstractUser):
     is_active = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
+    can_change_username = models.BooleanField(
+        default=True,
+    )
+    can_change_email_address = models.BooleanField(
+        default=True,
+    )
+    can_change_password = models.BooleanField(
+        default=True,
+    )
     objects = UserManager()
 
     USERNAME_FIELD = "username"

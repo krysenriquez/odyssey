@@ -17,12 +17,10 @@ if LIVE:
         "https://member.topchoiceinternational.com",
         "https://admin.topchoiceinternational.com",
         "https://odyssey.topchoiceinternational.com",
-        "http://member.topchoiceinternational.com",
-        "http://admin.topchoiceinternational.com",
-        "http://odyssey.topchoiceinternational.com",
         "member.topchoiceinternational.com",
         "admin.topchoiceinternational.com",
         "odyssey.topchoiceinternational.com",
+        "https://139.59.251.241",
     ]
 
 CORS_ORIGIN_ALLOW_ALL = False
@@ -33,17 +31,13 @@ if LIVE:
         "https://member.topchoiceinternational.com",
         "https://admin.topchoiceinternational.com",
         "https://odyssey.topchoiceinternational.com",
-        "http://member.topchoiceinternational.com",
-        "http://admin.topchoiceinternational.com",
-        "http://odyssey.topchoiceinternational.com",
+        "https://139.59.251.241",
     ]
     CSRF_TRUSTED_ORIGINS = [
         "https://member.topchoiceinternational.com",
         "https://admin.topchoiceinternational.com",
         "https://odyssey.topchoiceinternational.com",
-        "http://member.topchoiceinternational.com",
-        "http://admin.topchoiceinternational.com",
-        "http://odyssey.topchoiceinternational.com",
+        "https://139.59.251.241",
     ]
 else:
     CORS_ALLOWED_ORIGINS = [
@@ -51,12 +45,16 @@ else:
         "http://127.0.0.1:3001",
         "http://localhost:3002",
         "http://127.0.0.1:3002",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
     ]
     CSRF_TRUSTED_ORIGINS = [
         "http://localhost:3001",
         "http://127.0.0.1:3001",
         "http://localhost:3002",
         "http://127.0.0.1:3002",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
     ]
 
 INSTALLED_APPS = [
@@ -91,7 +89,7 @@ ROOT_URLCONF = "odyssey.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [Path.absolute(Path(BASE_DIR, "statics", "templates"))],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -112,10 +110,11 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.UserRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {"anon": "20/minute", "user": "10000/day"},
+    "DATE_INPUT_FORMATS": ["iso-8601", "%Y-%m-%dT%H:%M:%S.%fZ"],
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=50),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=90),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
@@ -147,6 +146,16 @@ WSGI_APPLICATION = "odyssey.wsgi.application"
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+    },
     "filters": {
         "require_debug_true": {
             "()": "django.utils.log.RequireDebugTrue",
@@ -259,3 +268,13 @@ CRON_CLASSES = [
     "vanguard.cron.DeleteBlacklistedTokens",
     "vanguard.cron.DeleteOutstandingTokens",
 ]
+
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtpout.asia.secureserver.net"
+EMAIL_HOST_USER = "tcisupport@topchoiceinternational.com"
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD = "TopChoice2022!"
+EMAIL_PORT = 80
+EMAIL_USE_SSL = False
+EMAIL_USE_TLS = True

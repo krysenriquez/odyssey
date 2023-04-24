@@ -1,17 +1,15 @@
 from django.core.validators import validate_email
+from django.template.loader import render_to_string
 from django.core.exceptions import ValidationError
 from django.db.models import Q, Prefetch, F, Value as V, Count
 from django.db.models.functions import Concat
 from rest_framework import status, views, permissions
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
 from difflib import SequenceMatcher
 from users.serializers import *
 from users.models import *
-from accounts.models import Account
-from accounts.enums import AccountStatus
-from core.services import get_setting
-from core.enums import Settings
 from vanguard.permissions import IsDeveloperUser, IsAdminUser, IsStaffUser, IsMemberUser
 from vanguard.throttle import TenPerMinuteAnonThrottle
 
@@ -31,30 +29,6 @@ class CheckUsernameView(views.APIView):
                 data={"message": "Username unavailable."},
                 status=status.HTTP_409_CONFLICT,
             )
-
-
-class ChangeUsernameView(views.APIView):
-    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
-
-    def post(self, request, *args, **kwargs):
-        username = request.data.get("username")
-        userId = request.data.get("user_id")
-
-        try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
-            return Response(data={"message": "Username available."}, status=status.HTTP_200_OK)
-        else:
-            if str(user.pk) != userId:
-                return Response(
-                    data={"message": "Username unavailable."},
-                    status=status.HTTP_409_CONFLICT,
-                )
-            else:
-                return Response(
-                    data={"message": "Retaining Username."},
-                    status=status.HTTP_200_OK,
-                )
 
 
 class CheckEmailAddressView(views.APIView):
@@ -84,32 +58,82 @@ class CheckEmailAddressView(views.APIView):
             )
 
 
-class ChangeEmailAddressView(views.APIView):
-    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
+class ChangeUsernameAdminView(views.APIView):
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser]
+
+    def post(self, request, *args, **kwargs):
+        new_username = request.data.get("username")
+        password = request.data.get("admin_password")
+        member_user = User.objects.get(user_id=request.data.get("user_id"))
+        logged_user = self.request.user
+
+        try:
+            user = User.objects.get(username=new_username)
+        except User.DoesNotExist:
+            if not logged_user.check_password(password):
+                return Response(
+                    data={"message": "Invalid Admin Password."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            data = {"username": new_username, "can_change_username": False}
+            serializer = UserSerializer(member_user, data=data, partial=True)
+
+            if serializer.is_valid():
+                serializer.save()
+                return Response(data={"message": "Username has been updated"}, status=status.HTTP_200_OK)
+            return Response(data={"message": "Unable to update username"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            if user != member_user:
+                return Response(
+                    data={"message": "Username unavailable."},
+                    status=status.HTTP_409_CONFLICT,
+                )
+            else:
+                return Response(
+                    data={"message": "Retaining Username."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+
+class ChangeEmailAddressAdminView(views.APIView):
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser]
 
     def post(self, request, *args, **kwargs):
         email_address = request.data.get("email_address")
-        userId = request.data.get("user_id")
+        password = request.data.get("admin_password")
+        member_user = User.objects.get(user_id=request.data.get("user_id"))
+        logged_user = self.request.user
 
         try:
             validate_email(email_address)
             try:
                 user = User.objects.get(email_address=email_address)
             except User.DoesNotExist:
-                return Response(
-                    data={"message": "Email Address Available"},
-                    status=status.HTTP_200_OK,
-                )
-            else:
-                if str(user.pk) != userId:
+                if not logged_user.check_password(password):
                     return Response(
-                        data={"message": "Sorry, Email Address unavailable."},
+                        data={"message": "Invalid Admin Password."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                data = {"email_address": email_address, "can_change_email_address": False}
+                serializer = UserSerializer(member_user, data=data, partial=True)
+
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(
+                        data={"message": "Email Address has been updated"},
+                        status=status.HTTP_200_OK,
+                    )
+                return Response(data={"message": "Unable to update Email Address"}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                if user != member_user:
+                    return Response(
+                        data={"message": "Email Address unavailable."},
                         status=status.HTTP_409_CONFLICT,
                     )
                 else:
                     return Response(
                         data={"message": "Retaining Email Address."},
-                        status=status.HTTP_200_OK,
+                        status=status.HTTP_400_BAD_REQUEST,
                     )
         except ValidationError:
             return Response(
@@ -118,58 +142,141 @@ class ChangeEmailAddressView(views.APIView):
             )
 
 
-class ChangePassword(views.APIView):
+class ChangePasswordAdminView(views.APIView):
     model = User
-    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
-
-    def get_object(self, request, queryset=None):
-        user = User.objects.get(id=request)
-        return user
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser]
 
     def post(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            request.data["user"] = self.request.user.pk
-            serializer = ChangePasswordSerializer(data=request.data)
+        new_password = request.data.get("new_password")
+        password = request.data.get("admin_password")
+        member_user = User.objects.get(user_id=request.data.get("user_id"))
+        logged_user = self.request.user
 
+        if not logged_user.check_password(password):
+            return Response(
+                data={"message": "Invalid Admin Password."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        logged_user.set_password(new_password)
+        logged_user.can_change_password = False
+        logged_user.save()
+
+        return Response(data={"message": "Password Updated."}, status=status.HTTP_200_OK)
+
+
+class ChangeUsernameView(views.APIView):
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
+
+    def post(self, request, *args, **kwargs):
+        new_username = request.data.get("username")
+        password = request.data.get("confirm_password")
+        logged_user = self.request.user
+        try:
+            user = User.objects.get(username=new_username)
+        except User.DoesNotExist:
+            if not logged_user.check_password(password):
+                return Response(
+                    data={"message": "Invalid Current Password."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            data = {"username": new_username, "can_change_username": False}
+            serializer = UserSerializer(logged_user, data=data, partial=True)
             if serializer.is_valid():
-                user = serializer.data.get("user")
-                current_password = serializer.data.get("current_password")
-                self.object = self.get_object(user)
-                if not self.object.check_password(current_password):
+                print(serializer)
+                serializer.save()
+                return Response(data={"message": "Username has been updated"}, status=status.HTTP_200_OK)
+            return Response(data={"message": "Unable to update username"}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            if user != logged_user:
+                return Response(
+                    data={"message": "Username unavailable."},
+                    status=status.HTTP_409_CONFLICT,
+                )
+            else:
+                return Response(
+                    data={"message": "Retaining Username."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+
+class ChangeEmailAddressView(views.APIView):
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
+
+    def post(self, request, *args, **kwargs):
+        email_address = request.data.get("email_address")
+        password = request.data.get("confirm_password")
+        logged_user = self.request.user
+        try:
+            validate_email(email_address)
+            try:
+                user = User.objects.get(email_address=email_address)
+            except User.DoesNotExist:
+                if not logged_user.check_password(password):
                     return Response(
                         data={"message": "Invalid Current Password."},
                         status=status.HTTP_400_BAD_REQUEST,
                     )
-                self.object.set_password(serializer.data.get("new_password"))
-                self.object.save()
-                return Response(data={"message": "Password Updated."}, status=status.HTTP_200_OK)
+                data = {"email_address": email_address, "can_change_email_address": False}
+                serializer = UserSerializer(logged_user, data=data, partial=True)
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(
+                        data={"message": "Email Address has been updated"},
+                        status=status.HTTP_200_OK,
+                    )
+                return Response(data={"message": "Unable to update Email Address"}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                if user != logged_user:
+                    return Response(
+                        data={"message": "Email Address unavailable."},
+                        status=status.HTTP_409_CONFLICT,
+                    )
+                else:
+                    return Response(
+                        data={"message": "Retaining Email Address."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+        except ValidationError:
+            return Response(
+                data={"message": "Please enter a valid Email Address format."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-            for error in serializer.errors:
-                message = serializer.errors[error]
 
-                return Response(data={"message": message}, status=status.HTTP_400_BAD_REQUEST)
-
-
-class ResetPassword(views.APIView):
+class ChangePasswordView(views.APIView):
     model = User
     permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
 
-    def get_object(self, request, queryset=None):
-        user = User.objects.get(id=request)
-        return user
+    def post(self, request, *args, **kwargs):
+        new_password = request.data.get("new_password")
+        password = request.data.get("current_password")
+        logged_user = self.request.user
+
+        if not logged_user.check_password(password):
+            return Response(
+                data={"message": "Invalid Current Password."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        logged_user.set_password(new_password)
+        logged_user.can_change_password = False
+        logged_user.save()
+
+        return Response(data={"message": "Password Updated."}, status=status.HTTP_200_OK)
+
+
+class ResetPasswordView(views.APIView):
+    model = User
+    permission_classes = [IsDeveloperUser | IsAdminUser | IsStaffUser | IsMemberUser]
 
     def post(self, request, *args, **kwargs):
-        serializer = ResetPasswordSerializer(data=request.data)
-
-        if serializer.is_valid():
-            user = serializer.data.get("user")
-            self.object = self.get_object(user)
-
-            self.object.set_password(serializer.data.get("new_password"))
-            self.object.save()
-            return Response(data={"message": "Password Updated."}, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        new_password = request.data.get("new_password")
+        refresh_token = self.request.data.get("refresh")
+        logged_user = self.request.user
+        logged_user.set_password(new_password)
+        logged_user.save()
+        token = RefreshToken(token=refresh_token)
+        token.blacklist()
+        return Response(data={"message": "Password Updated."}, status=status.HTTP_200_OK)
 
 
 class PasswordValidation(views.APIView):

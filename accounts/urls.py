@@ -2,6 +2,7 @@ from rest_framework.routers import DefaultRouter
 from accounts.api import (
     AccountCashoutMethodsViewSet,
     UserAccountAvatarViewSet,
+    UserAccountViewSet,
     AccountProfileViewSet,
     AccountListViewSet,
     AccountReferralsViewSet,
@@ -19,6 +20,8 @@ from accounts.api import (
     UpgradeAccountView,
     VerifyCreateAccountLinkView,
     UpdateUserStatusView,
+    UpdateAccountAdminView,
+    UpdateAccountView,
     TestCreateView,
 )
 from django.urls import path
@@ -29,6 +32,8 @@ router.register(r"gettopearners", TopAccountWalletViewSet)
 router.register(r"getreferrals", AccountReferralsViewSet)
 router.register(r"getmembers", AccountListViewSet)
 router.register(r"getgenealogyadmin", GenealogyAccountAdminViewSet)
+router.register(r"getmemberuser", UserAccountViewSet)
+
 # Member
 router.register(r"getprofile", AccountProfileViewSet)
 router.register(r"getaccount", UserAccountAvatarViewSet)
@@ -47,6 +52,8 @@ urlpatterns = [
     path("upgrade/", UpgradeAccountView.as_view()),
     path("verify/", VerifyCreateAccountLinkView.as_view()),
     path("updateuserstatus/", UpdateUserStatusView.as_view()),
+    path("updateprofileadmin/", UpdateAccountAdminView.as_view()),
+    path("updateprofile/", UpdateAccountView.as_view()),
     path("test/", TestCreateView.as_view()),
 ]
 
